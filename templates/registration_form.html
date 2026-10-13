@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Become a Campus Ambassador | BIIN{% endblock %}
+{% block body_class %}registration-page{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'registration.css' %}">
+<script src="{% static 'registration.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="registration-shell">
+  <div class="registration-wrap">
+    <section class="registration-hero" aria-labelledby="registration-title">
+      <div class="registration-hero-copy">
+        <a class="registration-wordmark" href="{% url 'home' %}" aria-label="BIIN home">BIIN<span class="brand-dot"></span></a>
+        <p class="program-label">CAMPUS AMBASSADOR PROGRAM</p>
+        <h1 id="registration-title">Join the <span>Movement.</span></h1>
+        <p class="hero-tagline">Your voice. Your campus. Our future.</p>
+        <p class="hero-description">Connect your community to a world of innovation.<br>Take your first step with BIIN.</p>
+      </div>
+      <img class="ambassador-art" src="{% static 'ambassador.svg' %}" alt="" width="320" height="280">
+    </section>
+
+    <form method="post" class="registration-card" id="ambassador-form">
+      {% csrf_token %}
+      <nav class="registration-progress" aria-label="Registration steps" hidden>
+        <ol class="step-list">
+          <li><button type="button" class="step-button" data-step="0" aria-controls="step-personal" disabled><span class="step-number">1</span><span class="step-label">Personal</span></button></li>
+          <li><button type="button" class="step-button" data-step="1" aria-controls="step-education" disabled><span class="step-number">2</span><span class="step-label">Education</span></button></li>
+          <li><button type="button" class="step-button" data-step="2" aria-controls="step-experience" disabled><span class="step-number">3</span><span class="step-label">Experience</span></button></li>
+          <li><button type="button" class="step-button" data-step="3" aria-controls="step-motivation" disabled><span class="step-number">4</span><span class="step-label">Motivation</span></button></li>
+          <li><button type="button" class="step-button" data-step="4" aria-controls="step-declaration" disabled><span class="step-number">5</span><span class="step-label">Review</span></button></li>
+        </ol>
+      </nav>
+      <div class="registration-card-body">
+        <div class="form-meta"><span id="step-status" role="status" aria-live="polite">Your application</span><span><span class="required-star">*</span> Required fields</span></div>
+        {% if form.errors %}
+          <div class="non-field-errors" role="alert">Please check the highlighted fields before continuing. {{ form.non_field_errors }}</div>
+        {% endif %}
+        <section class="registration-step" id="step-personal" aria-labelledby="heading-personal">
+          <div class="step-heading"><h2 id="heading-personal" tabindex="-1">Basic details</h2><p>Let’s get to know you. Start with your contact information.</p></div>
+          <div class="form-grid">
+          <div class="field">
+            {{ form.full_name.label_tag }}
+            {{ form.full_name }}
+            {% if form.full_name.errors %}<div class="field-error" id="id_full_name_error">{{ form.full_name.errors }}</div>{% endif %}
+          </div>
+          <div class="field">
+            {{ form.email.label_tag }}
+            {{ form.email }}
+            {% if form.email.errors %}<div class="field-error" id="id_email_error">{{ form.email.errors }}</div>{% endif %}
+          </div>
+          <div class="field">
+            {{ form.phone_number.label_tag }}
+            {{ form.phone_number }}
+            {% if form.phone_number.errors %}<div class="field-error" id="id_phone_number_error">{{ form.phone_number.errors }}</div>{% endif %}
+          </div>
+          <div class="field full-width">
+            {{ form.address.label_tag }}
+            {{ form.address }}
+            {% if form.address.errors %}<div class="field-error" id="id_address_error">{{ form.address.errors }}</div>{% endif %}
+          </div>
+          <div class="field">
+            {{ form.facebook_link.label_tag }}
+            {{ form.facebook_link }}
+            {% if form.facebook_link.errors %}<div class="field-error" id="id_facebook_link_error">{{ form.facebook_link.errors }}</div>{% endif %}
+          </div>
+          <div class="field">
+            {{ form.linkedin_link.label_tag }}
+            {{ form.linkedin_link }}
+            {% if form.linkedin_link.errors %}<div class="field-error" id="id_linkedin_link_error">{{ form.linkedin_link.errors }}</div>{% endif %}
+          </div>
+          <div class="field">
+            {{ form.website.label_tag }}
+            {{ form.website }}
+            {% if form.website.errors %}<div class="field-error" id="id_website_error">{{ form.website.errors }}</div>{% endif %}
+          </div>
+          </div>
+        </section>
+        <section class="registration-step" id="step-education" aria-labelledby="heading-education">
+          <div class="step-heading"><h2 id="heading-education" tabindex="-1">Your campus, your community</h2><p>Tell us where you study and where you’ll make an impact.</p></div>
+          <div class="form-grid">
+          <div class="field">
+            {{ form.campus_name.label_tag }}
+            {{ form.campus_name }}
+            {% if form.campus_name.errors %}<div class="field-error" id="id_campus_name_error">{{ form.campus_name.errors }}</div>{% endif %}
+          </div>
+          <div class="field">
+            {{ form.department.label_tag }}
+            {{ form.department }}
+            {% if form.department.errors %}<div class="field-error" id="id_department_error">{{ form.department.errors }}</div>{% endif %}
+          </div>
+          <div class="field">
+            {{ form.student_id.label_tag }}
+            {{ form.student_id }}
+            {% if form.student_id.errors %}<div class="field-error" id="id_student_id_error">{{ form.student_id.errors }}</div>{% endif %}
+          </div>
+          <div class="field">
+            {{ form.academic_year.label_tag }}
+            {{ form.academic_year }}
+            {% if form.academic_year.errors %}<div class="field-error" id="id_academic_year_error">{{ form.academic_year.errors }}</div>{% endif %}
+          </div>
+          </div>
+        </section>
+        <section class="registration-step" id="step-experience" aria-labelledby="heading-experience">
+          <div class="step-heading"><h2 id="heading-experience" tabindex="-1">Experience & skills</h2><p>Share what you’ve done and the strengths you bring to the team.</p></div>
+          <div class="form-grid">
+
+          <div class="field">
+            {{ form.has_previous_campus_ambassador.label_tag }}
+            {{ form.has_previous_campus_ambassador }}
+            {% if form.has_previous_campus_ambassador.errors %}<div class="field-error" id="id_has_previous_campus_ambassador_error">{{ form.has_previous_campus_ambassador.errors }}</div>{% endif %}
+          </div>
+          <div class="field">
+            {{ form.has_organized_campus_events.label_tag }}
+            {{ form.has_organized_campus_events }}
+            {% if form.has_organized_campus_events.errors %}<div class="field-error" id="id_has_organized_campus_events_error">{{ form.has_organized_campus_events.errors }}</div>{% endif %}
+          </div>
+          <div class="field full-width">
+            {{ form.previous_experience_details.label_tag }}
+            {{ form.previous_experience_details }}
+            {% if form.previous_experience_details.errors %}<div class="field-error" id="id_previous_experience_details_error">{{ form.previous_experience_details.errors }}</div>{% endif %}
+          </div>
+          <fieldset class="field full-width skill-box">
+            <legend>{{ form.skills.label }} <span class="optional-label">(optional)</span></legend>
+            <div class="checkbox-grid">
+              {% for choice in form.skills %}
+                <label class="checkbox-item{% if form.skills.field.required %} required{% endif %}">
+                  {{ choice.tag }}
+                  <span>{{ choice.choice_label }}</span>
+                </label>
+              {% endfor %}
+            </div>
+            {% if form.skills.errors %}<div class="field-error" id="id_skills_error">{{ form.skills.errors }}</div>{% endif %}
+          </fieldset>
+        
+          </div>
+        </section>
+        <section class="registration-step" id="step-motivation" aria-labelledby="heading-motivation">
+          <div class="step-heading"><h2 id="heading-motivation" tabindex="-1">Make your mark</h2><p>Tell us what inspires you and how you’d bring BIIN to your campus.</p></div>
+          <div class="form-grid">
+
+          <div class="field full-width">
+            {{ form.motivation.label_tag }}
+            {{ form.motivation }}
+            {% if form.motivation.errors %}<div class="field-error" id="id_motivation_error">{{ form.motivation.errors }}</div>{% endif %}
+          </div>
+          <div class="field full-width">
+            {{ form.promotion_plan.label_tag }}
+            {{ form.promotion_plan }}
+            {% if form.promotion_plan.errors %}<div class="field-error" id="id_promotion_plan_error">{{ form.promotion_plan.errors }}</div>{% endif %}
+          </div>
+          <div class="field">
+            {{ form.weekly_hours.label_tag }}
+            {{ form.weekly_hours }}
+            {% if form.weekly_hours.errors %}<div class="field-error" id="id_weekly_hours_error">{{ form.weekly_hours.errors }}</div>{% endif %}
+          </div>
+          <div class="field">
+            {{ form.has_active_student_network.label_tag }}
+            {{ form.has_active_student_network }}
+            {% if form.has_active_student_network.errors %}<div class="field-error" id="id_has_active_student_network_error">{{ form.has_active_student_network.errors }}</div>{% endif %}
+          </div>
+          <div class="field full-width">
+            {{ form.activities_to_organize.label_tag }}
+            {{ form.activities_to_organize }}
+            {% if form.activities_to_organize.errors %}<div class="field-error" id="id_activities_to_organize_error">{{ form.activities_to_organize.errors }}</div>{% endif %}
+          </div>
+        
+          </div>
+        </section>
+        <section class="registration-step" id="step-declaration" aria-labelledby="heading-declaration">
+          <div class="step-heading"><h2 id="heading-declaration" tabindex="-1">Ready to join the movement?</h2><p>Review your details, then confirm your application below.</p></div>
+          <div id="application-review" class="application-review" hidden></div>
+
+        <div class="declaration-box">
+          <label class="checkbox-item{% if form.declaration_accuracy.field.required %} required{% endif %}">
+            {{ form.declaration_accuracy }}
+            <span>I confirm that the information provided is accurate. <em>(Required)</em></span>
+          </label>
+          {% if form.declaration_accuracy.errors %}<div class="field-error" id="id_declaration_accuracy_error">{{ form.declaration_accuracy.errors }}</div>{% endif %}
+          <label class="checkbox-item{% if form.declaration_terms.field.required %} required{% endif %}">
+            {{ form.declaration_terms }}
+            <span>I agree to BIIN's program terms and conditions. <em>(Required)</em></span>
+          </label>
+          {% if form.declaration_terms.errors %}<div class="field-error" id="id_declaration_terms_error">{{ form.declaration_terms.errors }}</div>{% endif %}
+        </div>
+        </section>
+        <div class="registration-actions">
+          <button type="button" class="back-button" id="previous-step" hidden><span aria-hidden="true">←</span> Back</button>
+          <span class="action-hint" id="action-hint">A little about you. A world of possibilities.</span>
+          <button type="button" class="button next-button" id="next-step" hidden>Next step <span aria-hidden="true">→</span></button>
+          <button type="submit" class="button next-button" id="submit-registration">Submit application <span aria-hidden="true">↗</span></button>
+        </div>
+      </div>
+    </form>
+    <p class="registration-footnote">A campus full of ideas. A network to bring them to life.<br><span>Bangladesh ICT &amp; Innovation Network</span></p>
+  </div>
+</div>
+{% endblock %}

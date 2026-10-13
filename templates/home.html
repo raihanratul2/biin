@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-copy">
+      <p class="eyebrow">BIIN Campus Ambassador Program</p>
+      <h1>Lead your campus, grow your network, and create impact.</h1>
+      <p>
+        Become a BIIN Campus Ambassador and help students connect with opportunities,
+        events, and meaningful experiences across Bangladesh.
+      </p>
+      <div class="hero-actions">
+        <a class="button primary" href="{% url 'registration_form' %}">Join as Campus Ambassador</a>
+      </div>
+    </div>
+    <div class="hero-card">
+      <div class="mini-stat">
+        <strong>200+</strong>
+        <span>Campus leaders connected</span>
+      </div>
+      <div class="mini-stat">
+        <strong>15+</strong>
+        <span>Universities represented</span>
+      </div>
+      <div class="mini-stat">
+        <strong>1</strong>
+        <span>Strong student community</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="section light-section">
+  <div class="container">
+    <div class="section-heading">
+      <p class="eyebrow">Why Join BIIN?</p>
+      <h2>Build leadership and opportunity.</h2>
+    </div>
+    <div class="feature-grid">
+      <article class="feature-card">
+        <h3>Campus Leadership</h3>
+        <p>Represent BIIN on your campus and help create a stronger student network.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Networking</h3>
+        <p>Connect with student communities, creators, and event leaders across institutions.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Skill Growth</h3>
+        <p>Develop communication, organizing, and outreach skills while working with a mission-driven team.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container split-grid">
+    <div>
+      <p class="eyebrow">How it works</p>
+      <h2>Simple steps to become a BIIN ambassador.</h2>
+    </div>
+    <div class="steps">
+      <div class="step-item">
+        <span>01</span>
+        <div>
+          <h3>Apply</h3>
+          <p>Fill out the campus ambassador form with your personal and university details.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <span>02</span>
+        <div>
+          <h3>Review</h3>
+          <p>Our team reviews your application and campus profile.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <span>03</span>
+        <div>
+          <h3>Start</h3>
+          <p>Once approved, begin promoting BIIN on your campus and grow the network.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

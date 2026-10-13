@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="page-header">
+  <div class="container list-header-row">
+    <div>
+      <p class="eyebrow">Applicants</p>
+      <h1>Campus Ambassador Submissions</h1>
+    </div>
+    <div class="list-actions">
+      <a class="button secondary" href="{% url 'export_excel' %}">Export Excel</a>
+      <a class="button primary" href="{% url 'export_pdf' %}">Export PDF</a>
+    </div>
+  </div>
+</section>
+
+<section class="section light-section">
+  <div class="container table-panel">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Campus</th>
+            <th>Department</th>
+            <th>Academic Year</th>
+            <th>Phone</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for applicant in applicants %}
+            <tr class="data-row"
+                data-full-name="{{ applicant.full_name|escape }}"
+                data-email="{{ applicant.email|escape }}"
+                data-phone="{{ applicant.phone_number|escape }}"
+                data-address="{{ applicant.address|escape }}"
+                data-campus="{{ applicant.campus_name|escape }}"
+                data-department="{{ applicant.department|escape }}"
+                data-student-id="{{ applicant.student_id|escape }}"
+                data-academic-year="{{ applicant.academic_year|escape }}"
+                data-facebook="{{ applicant.facebook_link|escape }}"
+                data-linkedin="{{ applicant.linkedin_link|escape }}"
+                data-website="{{ applicant.website|escape }}"
+                data-worked-before="{{ applicant.has_previous_campus_ambassador|escape }}"
+                data-previous-experience="{{ applicant.previous_experience_details|escape }}"
+                data-skills="{{ applicant.skills|escape }}"
+                data-organized-events="{{ applicant.has_organized_campus_events|escape }}"
+                data-motivation="{{ applicant.motivation|escape }}"
+                data-promotion-plan="{{ applicant.promotion_plan|escape }}"
+                data-weekly-hours="{{ applicant.weekly_hours|escape }}"
+                data-active-network="{{ applicant.has_active_student_network|escape }}"
+                data-activities="{{ applicant.activities_to_organize|escape }}"
+                data-declaration-accuracy="{{ applicant.declaration_accuracy|yesno:'Yes,No'|escape }}"
+                data-declaration-terms="{{ applicant.declaration_terms|yesno:'Yes,No'|escape }}">
+              <td>{{ applicant.full_name }}</td>
+              <td>{{ applicant.email }}</td>
+              <td>{{ applicant.campus_name }}</td>
+              <td>{{ applicant.department }}</td>
+              <td>{{ applicant.academic_year }}</td>
+              <td>{{ applicant.phone_number }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6">No applications submitted yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div id="detailsModal" class="modal" aria-hidden="true">
+  <div class="modal-content">
+    <button type="button" class="close-button" aria-label="Close details">&times;</button>
+    <h2 id="modalName">Applicant Name</h2>
+    <div class="detail-grid">
+      <div><strong>Email</strong><p id="modalEmail"></p></div>
+      <div><strong>Phone</strong><p id="modalPhone"></p></div>
+      <div><strong>Campus</strong><p id="modalCampus"></p></div>
+      <div><strong>Department</strong><p id="modalDepartment"></p></div>
+      <div><strong>Student ID</strong><p id="modalStudentId"></p></div>
+      <div><strong>Academic Year</strong><p id="modalAcademicYear"></p></div>
+      <div class="full-width"><strong>Address</strong><p id="modalAddress"></p></div>
+      <div><strong>Facebook</strong><p id="modalFacebook"></p></div>
+      <div><strong>LinkedIn</strong><p id="modalLinkedin"></p></div>
+      <div><strong>Website</strong><p id="modalWebsite"></p></div>
+      <div><strong>Previous Campus Ambassador</strong><p id="modalWorkedBefore"></p></div>
+      <div><strong>Organized Events</strong><p id="modalOrganizedEvents"></p></div>
+      <div class="full-width"><strong>Previous Experience</strong><p id="modalPreviousExperience"></p></div>
+      <div class="full-width"><strong>Skills</strong><p id="modalSkills"></p></div>
+      <div class="full-width"><strong>Motivation</strong><p id="modalMotivation"></p></div>
+      <div class="full-width"><strong>Promotion Plan</strong><p id="modalPromotionPlan"></p></div>
+      <div><strong>Weekly Hours</strong><p id="modalWeeklyHours"></p></div>
+      <div><strong>Active Student Network</strong><p id="modalActiveNetwork"></p></div>
+      <div class="full-width"><strong>Activities to Organize</strong><p id="modalActivities"></p></div>
+      <div><strong>Information Accurate</strong><p id="modalDeclarationAccuracy"></p></div>
+      <div><strong>Terms Accepted</strong><p id="modalDeclarationTerms"></p></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const modal = document.getElementById('detailsModal');
+  const closeButton = document.querySelector('.close-button');
+
+  document.querySelectorAll('.data-row').forEach((row) => {
+    row.addEventListener('click', () => {
+      document.getElementById('modalName').textContent = row.dataset.fullName || 'N/A';
+      document.getElementById('modalEmail').textContent = row.dataset.email || 'N/A';
+      document.getElementById('modalPhone').textContent = row.dataset.phone || 'N/A';
+      document.getElementById('modalCampus').textContent = row.dataset.campus || 'N/A';
+      document.getElementById('modalDepartment').textContent = row.dataset.department || 'N/A';
+      document.getElementById('modalStudentId').textContent = row.dataset.studentId || 'N/A';
+      document.getElementById('modalAcademicYear').textContent = row.dataset.academicYear || 'N/A';
+      document.getElementById('modalAddress').textContent = row.dataset.address || 'N/A';
+      document.getElementById('modalFacebook').textContent = row.dataset.facebook || 'N/A';
+      document.getElementById('modalLinkedin').textContent = row.dataset.linkedin || 'N/A';
+      document.getElementById('modalWebsite').textContent = row.dataset.website || 'N/A';
+      document.getElementById('modalWorkedBefore').textContent = row.dataset.workedBefore || 'N/A';
+      document.getElementById('modalOrganizedEvents').textContent = row.dataset.organizedEvents || 'N/A';
+      document.getElementById('modalPreviousExperience').textContent = row.dataset.previousExperience || 'N/A';
+      document.getElementById('modalSkills').textContent = row.dataset.skills || 'N/A';
+      document.getElementById('modalMotivation').textContent = row.dataset.motivation || 'N/A';
+      document.getElementById('modalPromotionPlan').textContent = row.dataset.promotionPlan || 'N/A';
+      document.getElementById('modalWeeklyHours').textContent = row.dataset.weeklyHours || 'N/A';
+      document.getElementById('modalActiveNetwork').textContent = row.dataset.activeNetwork || 'N/A';
+      document.getElementById('modalActivities').textContent = row.dataset.activities || 'N/A';
+      document.getElementById('modalDeclarationAccuracy').textContent = row.dataset.declarationAccuracy || 'N/A';
+      document.getElementById('modalDeclarationTerms').textContent = row.dataset.declarationTerms || 'N/A';
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+    });
+  });
+
+  closeButton.addEventListener('click', () => {
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+  });
+
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal) {
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+  });
+</script>
+{% endblock %}

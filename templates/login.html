@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="page-header">
+  <div class="container narrow">
+    <p class="eyebrow">Staff Portal</p>
+    <h1>Login to view submissions</h1>
+  </div>
+</section>
+
+<section class="section light-section">
+  <div class="container form-layout">
+    <form method="post" class="styled-form login-form">
+      {% csrf_token %}
+      <div class="form-grid single-column">
+        <div class="field">
+          <label for="id_username">Username</label>
+          {{ form.username }}
+        </div>
+        <div class="field">
+          <label for="id_password">Password</label>
+          {{ form.password }}
+        </div>
+      </div>
+      {% if form.errors %}
+        <div class="non-field-errors">Invalid username or password. Please try again.</div>
+      {% endif %}
+      <button type="submit" class="button primary submit-button">Login</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

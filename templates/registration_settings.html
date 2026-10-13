@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="page-header">
+  <div class="container narrow">
+    <p class="eyebrow">Admin Controls</p>
+    <h1>Registration Settings</h1>
+  </div>
+</section>
+
+<section class="section light-section">
+  <div class="container form-layout">
+    <form method="post" class="styled-form">
+      {% csrf_token %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="success-box">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+      <div class="toggle-card">
+        <div>
+          <h3>Campus Ambassador Registration</h3>
+          <p>Enable or disable the public registration form.</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" name="registration_open" {% if registration_open %}checked{% endif %}>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <button type="submit" class="button primary submit-button">Save Settings</button>
+    </form>
+  </div>
+</section>
+{% endblock %}
