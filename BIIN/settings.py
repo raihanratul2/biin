@@ -110,9 +110,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = env('DJANGO_TIME_ZONE', default='Asia/Dhaka')
-
 USE_I18N = True
-
 USE_TZ = True
 
 
@@ -124,9 +122,3 @@ else:
     STATIC_ROOT = BASE_DIR / env('DJANGO_STATIC_ROOT', default='staticfiles')
 MEDIA_ROOT = BASE_DIR / env('DJANGO_MEDIA_ROOT', default='media')
 
-
-EMAIL_BACKEND = env(
-    'DJANGO_EMAIL_BACKEND',
-    default='django.core.mail.backends.console.EmailBackend',
-)
-DEFAULT_FROM_EMAIL = env('DJANGO_DEFAULT_FROM_EMAIL', default='BIIN <noreply@biin.org.bd>')
