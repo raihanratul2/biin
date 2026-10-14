@@ -1,54 +1,54 @@
 import os
 from pathlib import Path
-
-from django.core.exceptions import ImproperlyConfigured
-from dotenv import load_dotenv
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-ENV_FILE = Path(os.getenv('DJANGO_ENV_FILE', BASE_DIR / '.env'))
-if not ENV_FILE.is_absolute():
-    ENV_FILE = BASE_DIR / ENV_FILE
-load_dotenv(ENV_FILE)
+import environ
+env = environ.Env()
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+environ.Env.read_env(BASE_DIR / '.env')
 
 
-def env_bool(name, default=False):
-    value = os.getenv(name)
-    if value is None:
-        return default
-    return value.strip().lower() in {'1', 'true', 'yes', 'on'}
+# from django.core.exceptions import ImproperlyConfigured
+# from dotenv import load_dotenv
+
+# # Build paths inside the project like this: BASE_DIR / 'subdir'.
+# BASE_DIR = Path(__file__).resolve().parent.parent
+# ENV_FILE = Path(os.getenv('DJANGO_ENV_FILE', BASE_DIR / '.env'))
+# # if not ENV_FILE.is_absolute():
+# #     ENV_FILE = BASE_DIR / ENV_FILE
+# # load_dotenv(ENV_FILE)
 
 
-def env_list(name, default=''):
-    return [item.strip() for item in os.getenv(name, default).split(',') if item.strip()]
+# # def env_bool(name, default=False):
+# #     value = os.getenv(name)
+# #     if value is None:
+# #         return default
+# #     return value.strip().lower() in {'1', 'true', 'yes', 'on'}
 
 
-def env_int(name, default=0):
-    try:
-        return int(os.getenv(name, default))
-    except (TypeError, ValueError) as error:
-        raise ImproperlyConfigured(f'{name} must be an integer.') from error
+# # def env_list(name, default=''):
+# #     return [item.strip() for item in os.getenv(name, default).split(',') if item.strip()]
 
 
-def required_env(name):
-    value = os.getenv(name)
-    if not value:
-        raise ImproperlyConfigured(f'{name} environment variable is required.')
-    return value
+# # def env_int(name, default=0):
+# #     try:
+# #         return int(os.getenv(name, default))
+# #     except (TypeError, ValueError) as error:
+# #         raise ImproperlyConfigured(f'{name} must be an integer.') from error
+
+
+# # def required_env(name):
+# #     value = os.getenv(name)
+# #     if not value:
+# #         raise ImproperlyConfigured(f'{name} environment variable is required.')
+# #     return value
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = required_env('DJANGO_SECRET_KEY')
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env_bool('DJANGO_DEBUG', False)
-
-ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1')
-CSRF_TRUSTED_ORIGINS = env_list('DJANGO_CSRF_TRUSTED_ORIGINS')
-
+SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
+DEBUG = os.getenv('DEBUG', 'False').lower() in ['1', 'true', 'yes', 'on']
+ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', '').split(',') if h.strip()]
+CSRF_TRUSTED_ORIGINS = [h.strip() for h in os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',') if h.strip()]
 
 # Application definition
 
@@ -96,34 +96,29 @@ WSGI_APPLICATION = 'BIIN.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASE_ENGINE = os.getenv('DJANGO_DATABASE_ENGINE', 'sqlite').strip().lower()
-
-if DATABASE_ENGINE in {'postgres', 'postgresql'}:
+DB_ENGINE = os.getenv('DJANGO_DB_ENGINE', 'sqlite3')
+if DB_ENGINE == 'sqlite3':
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': required_env('POSTGRES_DB'),
-            'USER': required_env('POSTGRES_USER'),
-            'PASSWORD': required_env('POSTGRES_PASSWORD'),
-            'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
-            'PORT': os.getenv('POSTGRES_PORT', '5432'),
-            'CONN_MAX_AGE': env_int('POSTGRES_CONN_MAX_AGE', 60),
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / os.getenv('DJANGO_DB_NAME', 'db.sqlite3'),
             'OPTIONS': {
-                'sslmode': os.getenv('POSTGRES_SSLMODE', 'prefer'),
+                # Wait before raising "database is locked" under concurrent writes.
+                'timeout': int(os.getenv('SQLITE_TIMEOUT_SECONDS', '15')),
             },
         }
     }
-elif DATABASE_ENGINE == 'sqlite':
+else:
     DATABASES = {
         'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / os.getenv('DJANGO_DATABASE_NAME', 'db.sqlite3'),
+        'ENGINE': f'django.db.backends.{DB_ENGINE}',
+        'NAME': os.getenv('DJANGO_DB_NAME'),
+        'USER': os.getenv('DJANGO_DB_USER'),
+        'PASSWORD': os.getenv('DJANGO_DB_PASSWORD'),
+        'HOST': os.getenv('DJANGO_DB_HOST'),
+        'PORT': os.getenv('DJANGO_DB_PORT'),
         }
     }
-else:
-    raise ImproperlyConfigured(
-        'DJANGO_DATABASE_ENGINE must be either sqlite or postgresql.'
-    )
 
 
 # Password validation
