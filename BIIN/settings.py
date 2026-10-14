@@ -57,42 +57,32 @@ WSGI_APPLICATION = 'BIIN.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DB_ENGINE = env('DJANGO_DATABASE_ENGINE', default='sqlite')
-if DB_ENGINE in ('sqlite', 'sqlite3'):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / env('DJANGO_DATABASE_NAME', default='db.sqlite3'),
-            'OPTIONS': {
-                # Wait before raising "database is locked" under concurrent writes.
-                'timeout': env.int('SQLITE_TIMEOUT_SECONDS', default=15),
-            },
-        }
-    }
-elif DB_ENGINE in ('postgresql', 'postgres'):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': env('POSTGRES_DB'),
-            'USER': env('POSTGRES_USER'),
-            'PASSWORD': env('POSTGRES_PASSWORD'),
-            'HOST': env('POSTGRES_HOST', default='localhost'),
-            'PORT': env('POSTGRES_PORT', default='5432'),
-            'CONN_MAX_AGE': env.int('POSTGRES_CONN_MAX_AGE', default=60),
-            'OPTIONS': {'sslmode': env('POSTGRES_SSLMODE', default='prefer')},
-        }
-    }
+DB_ENGINE = env('DJANGO_DB_ENGINE', default='sqlite3')
+DB_ENGINE = {'sqlite': 'sqlite3', 'postgres': 'postgresql'}.get(DB_ENGINE, DB_ENGINE)
+DB_BACKEND = DB_ENGINE if '.' in DB_ENGINE else f'django.db.backends.{DB_ENGINE}'
+if DB_BACKEND == 'django.db.backends.sqlite3':
+    DB_NAME = env('DJANGO_DB_NAME', default='db.sqlite3')
 else:
-    DATABASES = {
-        'default': {
-            'ENGINE': f'django.db.backends.{DB_ENGINE}',
-            'NAME': env('DJANGO_DATABASE_NAME'),
-            'USER': env('DJANGO_DB_USER', default=''),
-            'PASSWORD': env('DJANGO_DB_PASSWORD', default=''),
-            'HOST': env('DJANGO_DB_HOST', default=''),
-            'PORT': env('DJANGO_DB_PORT', default=''),
-        }
+    DB_NAME = env('DJANGO_DB_NAME')
+DB_OPTIONS = env.json('DJANGO_DB_OPTIONS', default={})
+
+if DB_BACKEND == 'django.db.backends.sqlite3':
+    if DB_NAME != ':memory:':
+        DB_NAME = BASE_DIR / DB_NAME
+    DB_OPTIONS.setdefault('timeout', env.int('SQLITE_TIMEOUT_SECONDS', default=15))
+
+DATABASES = {
+    'default': {
+        'ENGINE': DB_BACKEND,
+        'NAME': DB_NAME,
+        'USER': env('DJANGO_DB_USER', default=''),
+        'PASSWORD': env('DJANGO_DB_PASSWORD', default=''),
+        'HOST': env('DJANGO_DB_HOST', default=''),
+        'PORT': env('DJANGO_DB_PORT', default=''),
+        'CONN_MAX_AGE': env.int('DJANGO_DB_CONN_MAX_AGE', default=0),
+        'OPTIONS': DB_OPTIONS,
     }
+}
 
 
 # Password validation
