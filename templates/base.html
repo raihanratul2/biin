@@ -10,22 +10,30 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'main.css' %}">
+    <script src="{% static 'navigation.js' %}" defer></script>
     {% block extra_head %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
     <header class="site-header">
-        <nav class="navbar container">
+        <nav class="navbar container" aria-label="Main navigation">
             <div class="brand-wrap">
                 <a href="{% url 'home' %}" class="brand-logo" aria-label="BIIN home">
                     <img src="{% static 'BIIN_Logo.png' %}" alt="BIIN — Bangladesh ICT and Innovation Network">
                 </a>
             </div>
+            <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" hidden>
+                <span></span><span></span><span></span>
+            </button>
+            <div class="nav-menu" id="primary-navigation">
             <div class="nav-links">
                 <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a>
                 <a href="{% url 'about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">About Us</a>
                 <a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact Us</a>
             </div>
-            <a class="button primary header-button" href="{% url 'registration_form' %}">Join Now</a>
+            {% if request.resolver_match.url_name != 'registration_form' %}
+                <a class="button primary header-button" href="{% url 'registration_form' %}">Join Now</a>
+            {% endif %}
+            </div>
         </nav>
     </header>
 
