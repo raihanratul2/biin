@@ -259,3 +259,8 @@ TURNSTILE_REQUIRE_AUTH = os.getenv('TURNSTILE_REQUIRE_AUTH', 'true').lower() in 
 
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '')
+
+# Contact details printed on campus ambassador application forms.
+BIIN_OFFICE_ADDRESS = os.getenv('BIIN_OFFICE_ADDRESS', 'SimpleTree Attalika (Level 19), 134 Gulshan Avenue, Dhaka 1212, Bangladesh')
+BIIN_CONTACT_EMAIL = os.getenv('BIIN_CONTACT_EMAIL', 'info@biin.org.bd')
+BIIN_CONTACT_PHONE = os.getenv('BIIN_CONTACT_PHONE', '+88 09640 123 701-3')

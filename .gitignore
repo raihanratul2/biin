@@ -3,3 +3,4 @@ env
 .**
 !.gitignore
 *.sqlite3
+*.pyc

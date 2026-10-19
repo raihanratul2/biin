@@ -9,23 +9,31 @@
     </div>
     <div class="list-actions">
       <a class="button secondary" href="{% url 'export_excel' %}">Export Excel</a>
-      <a class="button primary" href="{% url 'export_pdf' %}">Export PDF</a>
+      <a class="button secondary" href="{% url 'export_pdf' %}?blank=1" target="_blank" rel="noopener">Blank Form PDF</a>
+
     </div>
   </div>
 </section>
 
 <section class="section light-section">
-  <div class="container table-panel">
+  <div class="container table-panel submissions-panel">
+    <form id="selected-submissions" target="_blank" method="get" action="{% url 'export_pdf' %}">
+    <input type="hidden" name="print" value="1">
     <div class="table-wrap">
       <table class="data-table">
         <thead>
           <tr>
+            <th><input type="checkbox" id="selectAll" aria-label="Select all submissions"></th>
             <th>Name</th>
             <th>Email</th>
             <th>Campus</th>
             <th>Department</th>
             <th>Academic Year</th>
             <th>Phone</th>
+            <th class="print-column">
+              <span id="printColumnLabel">Print</span>
+              <button class="table-print-button" type="submit" id="exportSelected" aria-label="Print selected submissions" hidden disabled>Print</button>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -53,21 +61,24 @@
                 data-activities="{{ applicant.activities_to_organize|escape }}"
                 data-declaration-accuracy="{{ applicant.declaration_accuracy|yesno:'Yes,No'|escape }}"
                 data-declaration-terms="{{ applicant.declaration_terms|yesno:'Yes,No'|escape }}">
+              <td><input class="submission-select" type="checkbox" name="ids" value="{{ applicant.pk }}" aria-label="Select {{ applicant.full_name }}"></td>
               <td>{{ applicant.full_name }}</td>
               <td>{{ applicant.email }}</td>
               <td>{{ applicant.campus_name }}</td>
               <td>{{ applicant.department }}</td>
               <td>{{ applicant.academic_year }}</td>
               <td>{{ applicant.phone_number }}</td>
+              <td><a class="table-print-button row-print-button" target="_blank" rel="noopener" href="{% url 'export_pdf' %}?ids={{ applicant.pk }}&amp;print=1" aria-label="Print {{ applicant.full_name }}">Print</a></td>
             </tr>
           {% empty %}
             <tr>
-              <td colspan="6">No applications submitted yet.</td>
+              <td colspan="8">No applications submitted yet.</td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
+    </form>
   </div>
 </section>
 
@@ -102,11 +113,35 @@
 </div>
 
 <script>
+  const checkboxes = Array.from(document.querySelectorAll('.submission-select'));
+  const selectAll = document.getElementById('selectAll');
+  const exportSelected = document.getElementById('exportSelected');
+  function updateSelection() {
+    const count = checkboxes.filter((checkbox) => checkbox.checked).length;
+    selectAll.checked = count > 0 && count === checkboxes.length;
+    selectAll.indeterminate = count > 0 && count < checkboxes.length;
+    selectAll.disabled = checkboxes.length === 0;
+    exportSelected.disabled = count === 0;
+    exportSelected.hidden = count === 0;
+    document.getElementById('printColumnLabel').hidden = count > 0;
+  }
+  selectAll.addEventListener('change', () => {
+    checkboxes.forEach((checkbox) => { checkbox.checked = selectAll.checked; });
+    updateSelection();
+  });
+  checkboxes.forEach((checkbox) => checkbox.addEventListener('change', updateSelection));
+  document.getElementById('selected-submissions').addEventListener('submit', (event) => {
+    if (!checkboxes.some((checkbox) => checkbox.checked)) event.preventDefault();
+  });
+  window.addEventListener('pageshow', updateSelection);
+  updateSelection();
+
   const modal = document.getElementById('detailsModal');
   const closeButton = document.querySelector('.close-button');
 
   document.querySelectorAll('.data-row').forEach((row) => {
-    row.addEventListener('click', () => {
+    row.addEventListener('click', (event) => {
+      if (event.target.closest('input, a, button')) return;
       document.getElementById('modalName').textContent = row.dataset.fullName || 'N/A';
       document.getElementById('modalEmail').textContent = row.dataset.email || 'N/A';
       document.getElementById('modalPhone').textContent = row.dataset.phone || 'N/A';

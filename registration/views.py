@@ -103,47 +103,30 @@ def export_excel(request):
 @login_required(login_url='login')
 @user_passes_test(is_staff_user, login_url='login')
 def export_pdf(request):
-    from reportlab.lib import colors
-    from reportlab.lib.pagesizes import A4
-    from reportlab.lib.styles import getSampleStyleSheet
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from .pdf import build_application_pdf
 
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="campus_ambassadors.pdf"'
+    if request.GET.get('blank') == '1':
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename="biin_blank_application.pdf"'
+        response['Cache-Control'] = 'private, no-store'
+        build_application_pdf(response, [None])
+        return response
 
     applications = CampusAmbassadorApplication.objects.all()
-    styles = getSampleStyleSheet()
-    story = [
-        Paragraph('BIIN Campus Ambassador Applications', styles['Title']),
-        Spacer(1, 18),
-    ]
+    if 'ids' in request.GET:
+        raw_ids = request.GET.getlist('ids')
+        if not raw_ids or any(not value.isdecimal() or len(value) > 18 for value in raw_ids):
+            return HttpResponse('Select valid submissions.', status=400)
+        ids = {int(value) for value in raw_ids}
+        applications = applications.filter(pk__in=ids)
+        if applications.count() != len(ids):
+            return HttpResponse('One or more submissions were not found.', status=404)
+    if not applications.exists():
+        return HttpResponse('No submissions available to export.', status=400)
 
-    data = [[
-        'Name', 'Email', 'Campus', 'Department', 'Phone', 'Academic Year'
-    ]]
-    for application in applications:
-        data.append([
-            application.full_name,
-            application.email,
-            application.campus_name,
-            application.department,
-            application.phone_number,
-            application.academic_year,
-        ])
-
-    table = Table(data)
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2d4f9a')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('GRID', (0, 0), (-1, -1), 1, colors.grey),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.whitesmoke, colors.white]),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-    ]))
-    story.append(table)
-
-    doc = SimpleDocTemplate(response, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
-    doc.build(story)
+    response = HttpResponse(content_type='application/pdf')
+    disposition = 'inline' if request.GET.get('print') == '1' else 'attachment'
+    response['Content-Disposition'] = f'{disposition}; filename="campus_ambassadors.pdf"'
+    response['Cache-Control'] = 'private, no-store'
+    build_application_pdf(response, applications)
     return response
