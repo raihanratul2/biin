@@ -897,3 +897,32 @@ select {
     padding-top: 0;
     padding-bottom: 0;
 }
+
+/* Fixed submission rows: long values stay on one line with an ellipsis. */
+.submissions-panel .data-table {
+    table-layout: fixed;
+    min-width: 1200px;
+}
+.submissions-panel .data-table th,
+.submissions-panel .data-table td {
+    box-sizing: border-box;
+    height: 60px;
+    padding: 0 16px;
+    vertical-align: middle;
+    line-height: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.submissions-panel .data-table th:first-child,
+.submissions-panel .data-table td:first-child {
+    padding: 0 12px;
+    text-align: center;
+}
+
+.submissions-panel .data-table th {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: break-word;
+}

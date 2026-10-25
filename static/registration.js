@@ -2,6 +2,78 @@
     const form = document.getElementById('ambassador-form');
     if (!form) return;
 
+    const phone = form.querySelector('[name="phone_number"]');
+    if (phone) {
+        const limit = phone.maxLength;
+        const saved = phone.value.replace(/[^0-9]/g, '');
+        const group = document.createElement('div');
+        group.className = 'phone-input-group';
+        const code = document.createElement('input');
+        code.type = 'text';
+        code.id = 'phone-country-code';
+        code.value = '+880';
+        code.defaultValue = '+880';
+        code.maxLength = 4;
+        code.required = true;
+        code.pattern = '\\+?[1-9][0-9]{0,2}';
+        code.inputMode = 'tel';
+        code.autocomplete = 'tel-country-code';
+        code.setAttribute('aria-label', 'Country code');
+        const number = document.createElement('input');
+        number.type = 'text';
+        number.id = 'phone-local-number';
+        number.required = phone.required;
+        number.inputMode = 'numeric';
+        number.autocomplete = 'tel-national';
+        number.pattern = '[0-9]+';
+        number.placeholder = 'Phone number';
+        number.value = saved.startsWith('880') ? saved.slice(3) : saved;
+        number.defaultValue = number.value;
+        number.setAttribute('aria-label', 'Phone number');
+        const label = form.querySelector(`label[for="${phone.id}"]`);
+        if (label) label.htmlFor = number.id;
+        phone.type = 'hidden';
+        phone.after(group);
+        group.append(code, number);
+        const counter = document.getElementById(`${phone.id}_count`);
+        if (counter) {
+            code.setAttribute('aria-describedby', counter.id);
+            number.setAttribute('aria-describedby', counter.id);
+        }
+        function syncPhone() {
+            const digits = code.value.replace(/[^0-9]/g, '').slice(0, 3);
+            code.value = (code.value.startsWith('+') ? '+' : '') + digits;
+            number.maxLength = Math.max(0, limit - digits.length);
+            number.value = number.value.replace(/[^0-9]/g, '').slice(0, number.maxLength);
+            phone.value = number.value ? digits + number.value : '';
+            phone.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        code.addEventListener('input', syncPhone);
+        number.addEventListener('input', syncPhone);
+        code.addEventListener('change', syncPhone);
+        number.addEventListener('change', syncPhone);
+        form.addEventListener('reset', () => setTimeout(syncPhone, 0));
+        form.addEventListener('submit', syncPhone);
+        syncPhone();
+    }
+
+    form.querySelectorAll('[data-character-count]').forEach(counter => {
+        const control = document.getElementById(counter.dataset.characterCount);
+        if (!control) return;
+        const describedBy = new Set((control.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean));
+        describedBy.add(counter.id);
+        control.setAttribute('aria-describedby', [...describedBy].join(' '));
+        const updateCount = () => {
+            const count = Array.from(control.value).length;
+            counter.hidden = count === 0;
+            counter.textContent = count ? `${count}/${control.maxLength}` : '';
+        };
+        control.addEventListener('input', updateCount);
+        control.addEventListener('change', updateCount);
+        form.addEventListener('reset', () => setTimeout(updateCount, 0));
+        updateCount();
+    });
+
     const steps = [...form.querySelectorAll('.registration-step')];
     const stepButtons = [...form.querySelectorAll('.step-button')];
     const previous = document.getElementById('previous-step');
@@ -36,7 +108,7 @@
                 const term = document.createElement('dt');
                 term.textContent = label.textContent;
                 const detail = document.createElement('dd');
-                detail.textContent = controls.filter(control => control.type !== 'checkbox' || control.checked)
+                detail.textContent = field.contains(phone) ? phone.value || 'Not provided' : controls.filter(control => control.type !== 'checkbox' || control.checked)
                     .map(control => control.tagName === 'SELECT' ? control.selectedOptions[0]?.textContent : control.value)
                     .filter(Boolean).join(', ') || 'Not provided';
                 list.append(term, detail);

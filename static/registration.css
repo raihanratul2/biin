@@ -130,3 +130,22 @@
     .registration-page { scroll-behavior: auto; }
     .registration-page *, .registration-page *::before, .registration-page *::after { scroll-behavior: auto; transition: none !important; }
 }
+
+.field-label-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+.character-count {
+    color: #596574;
+    font-size: 0.75rem;
+    font-weight: normal;
+    white-space: nowrap;
+}
+
+.phone-input-group {
+    display: grid;
+    grid-template-columns: 90px minmax(0, 1fr);
+    gap: 8px;
+}
+.phone-input-group input { min-width: 0; }

@@ -1,6 +1,8 @@
 """Shared printable layout for completed applications and blank paper forms."""
 from xml.sax.saxutils import escape
 
+from .pdf_layout import LONG_FIELDS, field_height
+
 from django.conf import settings
 from django.contrib.staticfiles import finders
 from reportlab.lib import colors
@@ -28,6 +30,65 @@ class AnswerLine(Flowable):
         self.canv.setDash(3, 2)
         self.canv.line(0, 1, self.width, 1)
         self.canv.restoreState()
+
+
+class FixedFieldValue(Flowable):
+    """Reserve the same value height for empty and completed fields."""
+    def __init__(self, paragraph, height):
+        super().__init__()
+        self.paragraph = paragraph
+        self.height = height
+
+    def wrap(self, available_width, available_height):
+        self.width = available_width
+        return self.width, self.height
+
+    def draw(self):
+        value = KeepInFrame(self.width, self.height, [self.paragraph], mode='shrink')
+        _, height = value.wrapOn(self.canv, self.width, self.height)
+        value.drawOn(self.canv, 0, self.height - height)
+
+
+class TwoLineAnswer(Flowable):
+    """A fixed answer area with two writing lines for section 05."""
+    def __init__(self, paragraph, lines=2, line_height=15):
+        super().__init__()
+        self.paragraph = paragraph
+        self.lines = lines
+        self.line_height = line_height
+        self.height = lines * line_height
+
+    def wrap(self, available_width, available_height):
+        self.width = available_width
+        return self.width, self.height
+
+    def draw(self):
+        canvas = self.canv
+        canvas.saveState()
+        canvas.setStrokeColor(colors.HexColor('#a6afb9'))
+        canvas.setLineWidth(.4)
+        canvas.setDash(3, 2)
+        for y in range(0, self.height, self.line_height):
+            canvas.line(0, y, self.width, y)
+        canvas.restoreState()
+        paragraph = self.paragraph
+        _, height = paragraph.wrap(self.width, self.height)
+        if height > self.height:
+            # Keep the writing-line spacing fixed while fitting at most N lines.
+            low, high = .1, paragraph.style.fontSize
+            for _ in range(24):
+                size = (low + high) / 2
+                style = ParagraphStyle('FittedAnswer', parent=paragraph.style, fontSize=size)
+                candidate = Paragraph(paragraph.text, style)
+                _, candidate_height = candidate.wrap(self.width, self.height)
+                if candidate_height <= self.height:
+                    low = size
+                else:
+                    high = size
+            paragraph = Paragraph(paragraph.text, ParagraphStyle(
+                'FittedAnswer', parent=paragraph.style, fontSize=low))
+            _, height = paragraph.wrap(self.width, self.height)
+        paragraph.drawOn(canvas, 0, self.height - height)
 
 
 class SkillCheckbox(Flowable):
@@ -74,7 +135,7 @@ SECTIONS = [
     ('04  EXPERIENCE & SKILLS', [
         [('Previous campus ambassador?', 'has_previous_campus_ambassador'),
          ('Organized campus events?', 'has_organized_campus_events')],
-        [('Previous experience', 'previous_experience_details'), ('Skills', 'skills')],
+        [('Skills', 'skills'), ('Previous experience', 'previous_experience_details')],
     ]),
     ('05  MOTIVATION & CAMPUS ENGAGEMENT', [
         [('Why do you want to join?', 'motivation')],
@@ -88,14 +149,14 @@ SECTIONS = [
 def build_application_pdf(response, applications):
     applications = list(applications)
     doc = SimpleDocTemplate(response, pagesize=A4, rightMargin=32, leftMargin=32,
-                            topMargin=25, bottomMargin=34,
+                            topMargin=25, bottomMargin=60,
                             title='BIIN Campus Ambassador Application Form')
     ink = colors.HexColor('#18334d')
     line = colors.HexColor('#b9c5cf')
-    normal = ParagraphStyle('FormValue', fontName='Helvetica', fontSize=8.5, leading=11,
+    normal = ParagraphStyle('FormValue', fontName='Helvetica', fontSize=8.5, leading=9,
                             textColor=colors.HexColor('#596574'))
     label = ParagraphStyle('FormLabel', parent=normal, fontName='Helvetica-Bold',
-                           fontSize=7.2, leading=9.5, textColor=colors.HexColor('#172b40'))
+                           fontSize=7.2, leading=8, textColor=colors.HexColor('#172b40'))
     heading = ParagraphStyle('FormHeading', parent=normal, fontName='Helvetica-Bold',
                              fontSize=8, leading=11, textColor=ink)
 
@@ -108,11 +169,34 @@ def build_application_pdf(response, applications):
             value = 'Yes' if value else 'No'
         if application is None and key.startswith('has_'):
             value = '[  ] Yes     [  ] No'
+        if key in {'has_previous_campus_ambassador', 'has_organized_campus_events'}:
+            width = doc.width / 2 - 16
+            choices = Table([[
+                text(caption.upper(), label),
+                SkillCheckbox('Yes', application is not None and value == 'Yes'),
+                SkillCheckbox('No', application is not None and value == 'No'),
+            ]], colWidths=[width - 72, 36, 36])
+            choices.setStyle(TableStyle([
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('LEFTPADDING', (0, 0), (-1, -1), 0),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+                ('TOPPADDING', (0, 0), (-1, -1), 0),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+            ]))
+            return [choices]
+        if key == 'previous_experience_details':
+            return [text(caption.upper(), label), Spacer(1, 2),
+                    TwoLineAnswer(
+                        text(' '.join(str(value).split()) or ' ',
+                             ParagraphStyle('ExperienceValue', parent=normal, leading=23)),
+                        lines=3, line_height=23)]
         if key == 'skills':
             from .models import CampusAmbassadorApplication
             selected = {item.strip() for item in str(value).split(',')}
             options = [SkillCheckbox(caption, key in selected)
                        for key, caption in CampusAmbassadorApplication.SKILL_CHOICES]
+            for option in options:
+                option.height = 13
             rows = [options[i:i + 2] for i in range(0, len(options), 2)]
             if len(rows[-1]) == 1:
                 rows[-1].append('')
@@ -123,22 +207,40 @@ def build_application_pdf(response, applications):
                 ('TOPPADDING', (0, 0), (-1, -1), 0),
                 ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
             ]))
-            return [text(caption.upper(), label), Spacer(1, 3), choices]
-        return [text(caption.upper(), label), Spacer(1, 3),
-                text(value or (' ' if application is None else 'N/A')),
-                Spacer(1, 5 if application is None else 1), AnswerLine()]
+            return [text(caption.upper(), label), Spacer(1, 1), choices]
+        if key in LONG_FIELDS:
+            return [text(caption.upper(), label), Spacer(1, 2),
+                    TwoLineAnswer(text(' '.join(str(value).split()) or ' ',
+                                       ParagraphStyle('TwoLineValue', parent=normal, leading=15)))]
+        return [text(caption.upper(), label), Spacer(1, 2),
+                FixedFieldValue(
+                    text(' '.join(str(value).split()) or (' ' if application is None else 'N/A')),
+                    field_height(key) - 21), AnswerLine()]
+
 
 
     def section(application, title, rows):
         data = [[text(title, heading), '']]
         spans = [('SPAN', (0, 0), (1, 0))]
-        for row in rows:
-            cells = [field(application, caption, key) for caption, key in row]
-            if len(cells) == 1:
-                spans.append(('SPAN', (0, len(data)), (1, len(data))))
-                cells.append('')
-            data.append(cells)
-        table = Table(data, colWidths=[doc.width / 2] * 2)
+        if title.startswith('04 '):
+            questions = []
+            for caption, key in rows[0]:
+                questions.extend(field(application, caption, key))
+            data.extend([
+                [questions, field(application, 'Previous experience', 'previous_experience_details')],
+                [field(application, 'Skills', 'skills'), ''],
+            ])
+            spans.append(('SPAN', (1, 1), (1, 2)))
+            row_heights = [19, 36, 54]
+        else:
+            for row in rows:
+                cells = [field(application, caption, key) for caption, key in row]
+                if len(cells) == 1:
+                    spans.append(('SPAN', (0, len(data)), (1, len(data))))
+                    cells.append('')
+                data.append(cells)
+            row_heights = [19] + [max(field_height(key) for _, key in row) for row in rows]
+        table = Table(data, colWidths=[doc.width / 2] * 2, rowHeights=row_heights)
         table.setStyle(TableStyle(spans + [
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#edf1f5')),
             ('BOX', (0, 0), (-1, -1), .5, line),
@@ -146,8 +248,8 @@ def build_application_pdf(response, applications):
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
             ('LEFTPADDING', (0, 0), (-1, -1), 8),
             ('RIGHTPADDING', (0, 0), (-1, -1), 8),
-            ('TOPPADDING', (0, 0), (-1, -1), 5),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
         ]))
         return table
 
@@ -174,7 +276,7 @@ def build_application_pdf(response, applications):
                                    ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f2f5f8')),
                                    ('TOPPADDING', (0, 0), (-1, -1), 9),
                                    ('BOTTOMPADDING', (0, 0), (-1, -1), 10)]))
-        content = [header, Spacer(1, 8),
+        content = [KeepInFrame(doc.width, 90, [header], mode='shrink'), Spacer(1, 8),
                    text('CAMPUS AMBASSADOR APPLICATION FORM',
                         ParagraphStyle('FormTitle', parent=heading, alignment=1, fontSize=12, leading=15)),
                    Spacer(1, 4)]
@@ -184,20 +286,17 @@ def build_application_pdf(response, applications):
             meta = 'Please complete in BLOCK LETTERS. Tick the applicable boxes.'
         content.extend([text(meta, label), Spacer(1, 8)])
         for title, rows in SECTIONS:
-            content.extend([section(application, title, rows), Spacer(1, 6)])
-        content.append(section(application, '06  DECLARATION & SIGNATURE', [
-            [('Information provided is accurate', 'declaration_accuracy'),
-             ('Program terms accepted', 'declaration_terms')],
-        ]) if application else section(None, '06  DECLARATION & SIGNATURE', [
-            [('[  ] I confirm the information is accurate and accept the program terms.', 'declaration')],
-        ]))
-        signature = ('Applicant signature: Signed digitally' if application else
-                     'Applicant signature: ____________________________     Date: __________________')
-        content.extend([Spacer(1, 14), text(signature, label)])
-        story.append(KeepInFrame(doc.width, doc.height - 12, content, mode='shrink'))
+            content.extend([section(application, title, rows), Spacer(1, 4)])
+        story.extend(content)
 
     def footer(canvas, document):
         canvas.saveState()
+        application = applications[document.page - 1]
+        canvas.setFont('Helvetica-Bold', 7.2)
+        canvas.setFillColor(ink)
+        signature = ('Applicant signature: Signed digitally' if application is not None else
+                     'Applicant signature: ____________________________     Date: __________________')
+        canvas.drawString(32, 42, signature)
         canvas.setFont('Helvetica', 7)
         canvas.setFillColor(ink)
         canvas.drawString(32, 18, 'BIIN  |  Campus Ambassador Program')

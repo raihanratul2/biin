@@ -47,7 +47,7 @@ class CampusAmbassadorFlowTests(TestCase):
         payload = {
             'full_name': 'Ayesha Rahman',
             'email': 'ayesha@example.com',
-            'phone_number': '+8801700000000',
+            'phone_number': '8801700000000',
             'address': 'Dhaka',
             'campus_name': 'University of Dhaka',
             'department': 'Computer Science',
@@ -134,3 +134,93 @@ class ApplicationPDFTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.page_count(response), 1)
         self.assertTrue(response['Content-Disposition'].startswith('inline;'))
+
+
+class PDFFieldLimitTests(TestCase):
+    def test_form_shows_limits_and_character_counters(self):
+        from django.test import override_settings
+        from registration.pdf_layout import FIELD_LIMITS
+
+        with override_settings(SECURE_SSL_REDIRECT=False):
+            response = self.client.get(reverse('registration_form'))
+        for name, limit in FIELD_LIMITS.items():
+            with self.subTest(field=name):
+                self.assertContains(response, f'data-character-count="id_{name}"')
+                self.assertContains(response, f'maxlength="{limit}"')
+                self.assertContains(response, f'data-character-count="id_{name}" hidden></small>')
+
+    def test_pdf_limits_are_enforced_by_models_and_forms(self):
+        from django.core.exceptions import ValidationError
+        from registration.pdf_layout import FIELD_LIMITS
+
+        form = CampusAmbassadorApplicationForm()
+        for name, limit in FIELD_LIMITS.items():
+            with self.subTest(field=name):
+                model_field = CampusAmbassadorApplication._meta.get_field(name)
+                self.assertEqual(model_field.max_length, limit)
+                self.assertEqual(form.fields[name].widget.attrs['maxlength'], limit)
+                # Run length validators directly so URL/email syntax is independent.
+                for field in (model_field, form.fields[name]):
+                    field.run_validators('W' * limit) if name not in {
+                        'email', 'facebook_link', 'linkedin_link', 'website'
+                    } else None
+                    with self.assertRaises(ValidationError):
+                        field.run_validators('W' * (limit + 1))
+
+    def test_maximum_length_answers_stay_on_one_a4_page(self):
+        import io
+        import re
+        from django.utils import timezone
+        from registration.pdf import build_application_pdf
+        from registration.pdf_layout import FIELD_LIMITS
+
+        application = CampusAmbassadorApplication(
+            **{name: 'W' * limit for name, limit in FIELD_LIMITS.items()},
+            created_at=timezone.now(),
+        )
+        output = io.BytesIO()
+        build_application_pdf(output, [None, application])
+        pdf = output.getvalue()
+        self.assertEqual(len(re.findall(rb'/Type\s*/Page\b', pdf)), 2)
+        boxes = re.findall(rb'/MediaBox\s*\[\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\]', pdf)
+        self.assertEqual(len(boxes), 2)
+        for box in boxes:
+            self.assertAlmostEqual(float(box[2]), 595.276, places=2)
+            self.assertAlmostEqual(float(box[3]), 841.890, places=2)
+
+
+class PDFWritingLineTests(TestCase):
+    def test_blank_and_filled_writing_lines_have_identical_positions(self):
+        import io
+        from unittest.mock import patch
+        from django.utils import timezone
+        from registration.pdf import AnswerLine, TwoLineAnswer, build_application_pdf
+        from registration.pdf_layout import FIELD_LIMITS
+
+        application = CampusAmbassadorApplication(
+            **{name: 'W' * limit for name, limit in FIELD_LIMITS.items()},
+            created_at=timezone.now(),
+        )
+        positions = []
+        original_line = AnswerLine.draw
+        original_two_lines = TwoLineAnswer.draw
+
+        def record_line(flowable):
+            positions.append(flowable.canv.absolutePosition(0, 1))
+            original_line(flowable)
+
+        def record_two_lines(flowable):
+            for y in range(0, flowable.height, flowable.line_height):
+                positions.append(flowable.canv.absolutePosition(0, y))
+            original_two_lines(flowable)
+
+        with patch.object(AnswerLine, 'draw', record_line), patch.object(TwoLineAnswer, 'draw', record_two_lines):
+            build_application_pdf(io.BytesIO(), [None])
+            blank_positions = positions[:]
+            positions.clear()
+            build_application_pdf(io.BytesIO(), [application])
+        self.assertTrue(blank_positions)
+        self.assertEqual(len(blank_positions), len(positions))
+        for blank, filled in zip(blank_positions, positions):
+            self.assertAlmostEqual(blank[0], filled[0], places=5)
+            self.assertAlmostEqual(blank[1], filled[1], places=5)

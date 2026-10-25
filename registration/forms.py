@@ -65,6 +65,13 @@ class CampusAmbassadorApplicationForm(forms.ModelForm):
             'declaration_terms': forms.CheckboxInput(),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from .pdf_layout import FIELD_LIMITS
+        for name, limit in FIELD_LIMITS.items():
+            self.fields[name].widget.attrs['maxlength'] = limit
+            self.fields[name].help_text = f'Maximum {limit} characters.'
+
     def clean_skills(self):
         skills = self.cleaned_data.get('skills')
         if skills:

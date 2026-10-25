@@ -41,37 +41,37 @@
           <div class="step-heading"><h2 id="heading-personal" tabindex="-1">Basic details</h2><p>Let’s get to know you. Start with your contact information.</p></div>
           <div class="form-grid">
           <div class="field">
-            {{ form.full_name.label_tag }}
+            <div class="field-label-row">{{ form.full_name.label_tag }} <small class="character-count" id="id_full_name_count" data-character-count="id_full_name" hidden></small></div>
             {{ form.full_name }}
             {% if form.full_name.errors %}<div class="field-error" id="id_full_name_error">{{ form.full_name.errors }}</div>{% endif %}
           </div>
           <div class="field">
-            {{ form.email.label_tag }}
+            <div class="field-label-row">{{ form.email.label_tag }} <small class="character-count" id="id_email_count" data-character-count="id_email" hidden></small></div>
             {{ form.email }}
             {% if form.email.errors %}<div class="field-error" id="id_email_error">{{ form.email.errors }}</div>{% endif %}
           </div>
           <div class="field">
-            {{ form.phone_number.label_tag }}
+            <div class="field-label-row">{{ form.phone_number.label_tag }} <small class="character-count" id="id_phone_number_count" data-character-count="id_phone_number" hidden></small></div>
             {{ form.phone_number }}
             {% if form.phone_number.errors %}<div class="field-error" id="id_phone_number_error">{{ form.phone_number.errors }}</div>{% endif %}
           </div>
           <div class="field full-width">
-            {{ form.address.label_tag }}
+            <div class="field-label-row">{{ form.address.label_tag }} <small class="character-count" id="id_address_count" data-character-count="id_address" hidden></small></div>
             {{ form.address }}
             {% if form.address.errors %}<div class="field-error" id="id_address_error">{{ form.address.errors }}</div>{% endif %}
           </div>
           <div class="field">
-            {{ form.facebook_link.label_tag }}
+            <div class="field-label-row">{{ form.facebook_link.label_tag }} <small class="character-count" id="id_facebook_link_count" data-character-count="id_facebook_link" hidden></small></div>
             {{ form.facebook_link }}
             {% if form.facebook_link.errors %}<div class="field-error" id="id_facebook_link_error">{{ form.facebook_link.errors }}</div>{% endif %}
           </div>
           <div class="field">
-            {{ form.linkedin_link.label_tag }}
+            <div class="field-label-row">{{ form.linkedin_link.label_tag }} <small class="character-count" id="id_linkedin_link_count" data-character-count="id_linkedin_link" hidden></small></div>
             {{ form.linkedin_link }}
             {% if form.linkedin_link.errors %}<div class="field-error" id="id_linkedin_link_error">{{ form.linkedin_link.errors }}</div>{% endif %}
           </div>
           <div class="field">
-            {{ form.website.label_tag }}
+            <div class="field-label-row">{{ form.website.label_tag }} <small class="character-count" id="id_website_count" data-character-count="id_website" hidden></small></div>
             {{ form.website }}
             {% if form.website.errors %}<div class="field-error" id="id_website_error">{{ form.website.errors }}</div>{% endif %}
           </div>
@@ -81,22 +81,22 @@
           <div class="step-heading"><h2 id="heading-education" tabindex="-1">Your campus, your community</h2><p>Tell us where you study and where you’ll make an impact.</p></div>
           <div class="form-grid">
           <div class="field">
-            {{ form.campus_name.label_tag }}
+            <div class="field-label-row">{{ form.campus_name.label_tag }} <small class="character-count" id="id_campus_name_count" data-character-count="id_campus_name" hidden></small></div>
             {{ form.campus_name }}
             {% if form.campus_name.errors %}<div class="field-error" id="id_campus_name_error">{{ form.campus_name.errors }}</div>{% endif %}
           </div>
           <div class="field">
-            {{ form.department.label_tag }}
+            <div class="field-label-row">{{ form.department.label_tag }} <small class="character-count" id="id_department_count" data-character-count="id_department" hidden></small></div>
             {{ form.department }}
             {% if form.department.errors %}<div class="field-error" id="id_department_error">{{ form.department.errors }}</div>{% endif %}
           </div>
           <div class="field">
-            {{ form.student_id.label_tag }}
+            <div class="field-label-row">{{ form.student_id.label_tag }} <small class="character-count" id="id_student_id_count" data-character-count="id_student_id" hidden></small></div>
             {{ form.student_id }}
             {% if form.student_id.errors %}<div class="field-error" id="id_student_id_error">{{ form.student_id.errors }}</div>{% endif %}
           </div>
           <div class="field">
-            {{ form.academic_year.label_tag }}
+            <div class="field-label-row">{{ form.academic_year.label_tag }} <small class="character-count" id="id_academic_year_count" data-character-count="id_academic_year" hidden></small></div>
             {{ form.academic_year }}
             {% if form.academic_year.errors %}<div class="field-error" id="id_academic_year_error">{{ form.academic_year.errors }}</div>{% endif %}
           </div>
@@ -117,7 +117,7 @@
             {% if form.has_organized_campus_events.errors %}<div class="field-error" id="id_has_organized_campus_events_error">{{ form.has_organized_campus_events.errors }}</div>{% endif %}
           </div>
           <div class="field full-width">
-            {{ form.previous_experience_details.label_tag }}
+            <div class="field-label-row">{{ form.previous_experience_details.label_tag }} <small class="character-count" id="id_previous_experience_details_count" data-character-count="id_previous_experience_details" hidden></small></div>
             {{ form.previous_experience_details }}
             {% if form.previous_experience_details.errors %}<div class="field-error" id="id_previous_experience_details_error">{{ form.previous_experience_details.errors }}</div>{% endif %}
           </div>
@@ -141,17 +141,17 @@
           <div class="form-grid">
 
           <div class="field full-width">
-            {{ form.motivation.label_tag }}
+            <div class="field-label-row">{{ form.motivation.label_tag }} <small class="character-count" id="id_motivation_count" data-character-count="id_motivation" hidden></small></div>
             {{ form.motivation }}
             {% if form.motivation.errors %}<div class="field-error" id="id_motivation_error">{{ form.motivation.errors }}</div>{% endif %}
           </div>
           <div class="field full-width">
-            {{ form.promotion_plan.label_tag }}
+            <div class="field-label-row">{{ form.promotion_plan.label_tag }} <small class="character-count" id="id_promotion_plan_count" data-character-count="id_promotion_plan" hidden></small></div>
             {{ form.promotion_plan }}
             {% if form.promotion_plan.errors %}<div class="field-error" id="id_promotion_plan_error">{{ form.promotion_plan.errors }}</div>{% endif %}
           </div>
           <div class="field">
-            {{ form.weekly_hours.label_tag }}
+            <div class="field-label-row">{{ form.weekly_hours.label_tag }} <small class="character-count" id="id_weekly_hours_count" data-character-count="id_weekly_hours" hidden></small></div>
             {{ form.weekly_hours }}
             {% if form.weekly_hours.errors %}<div class="field-error" id="id_weekly_hours_error">{{ form.weekly_hours.errors }}</div>{% endif %}
           </div>
@@ -161,7 +161,7 @@
             {% if form.has_active_student_network.errors %}<div class="field-error" id="id_has_active_student_network_error">{{ form.has_active_student_network.errors }}</div>{% endif %}
           </div>
           <div class="field full-width">
-            {{ form.activities_to_organize.label_tag }}
+            <div class="field-label-row">{{ form.activities_to_organize.label_tag }} <small class="character-count" id="id_activities_to_organize_count" data-character-count="id_activities_to_organize" hidden></small></div>
             {{ form.activities_to_organize }}
             {% if form.activities_to_organize.errors %}<div class="field-error" id="id_activities_to_organize_error">{{ form.activities_to_organize.errors }}</div>{% endif %}
           </div>
