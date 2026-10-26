@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<body style="margin:0;background:#f3f5f8;font-family:Arial,sans-serif;color:#243247;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center" style="padding:32px 16px;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#fff;border-radius:12px;">
+      <tr><td style="padding:28px 32px;background:#123c32;color:#fff;"><strong style="font-size:26px;">BIIN</strong><br>Campus Ambassador Program</td></tr>
+      <tr><td style="padding:32px;line-height:1.7;">
+        <h1 style="font-size:24px;margin-top:0;">Application received</h1>
+        <p>Dear {{ application.full_name }},</p>
+        <p>Thank you for applying to the BIIN Campus Ambassador Program. We have received your application and our team will review it.</p>
+        <p><strong>Campus:</strong> {{ application.campus_name }}<br><strong>Department:</strong> {{ application.department }}</p>
+        <p>A PDF copy of your submitted application is attached. You can also use the button below.</p>
+        <p style="margin:28px 0;"><a href="{{ pdf_url }}" style="display:inline-block;background:#123c32;color:#fff;padding:12px 22px;border-radius:6px;text-decoration:none;">Download application PDF</a></p>
+        <p style="font-size:13px;color:#607086;">This private link expires in {{ link_hours|floatformat:0 }} hours. Please keep it confidential.</p>
+        <p>Questions? Email <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>.</p>
+        <p>Best regards,<br><strong>BIIN Team</strong></p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body>
+</html>

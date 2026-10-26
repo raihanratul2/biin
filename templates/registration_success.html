@@ -6,6 +6,9 @@
     <p class="eyebrow">Registration Submitted</p>
     <h1>Thank you for applying to become a BIIN Campus Ambassador.</h1>
     <p>Your application has been received successfully. Our team will review it and contact you soon.</p>
+    {% for message in messages %}
+    <p role="status">{{ message }}</p>
+    {% endfor %}
     <a href="{% url 'home' %}" class="button primary">Back to Home</a>
   </div>
 </section>

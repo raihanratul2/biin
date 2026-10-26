@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from django.core.files.uploadedfile import SimpleUploadedFile
+from unittest.mock import patch
 import io
 import tempfile
 from PIL import Image
@@ -71,7 +72,8 @@ class CampusAmbassadorFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Registration Closed')
 
-    def test_registration_submission_creates_record_and_redirects_to_success(self):
+    @patch('registration.views.verify_registration_turnstile', return_value=True)
+    def test_registration_submission_creates_record_and_redirects_to_success(self, verification):
         payload = {
             'picture': uploaded_picture(),
             'full_name': 'Ayesha Rahman',
@@ -331,3 +333,127 @@ class PhotoOptimizationTests(TestCase):
         self.assertContains(response, 'image/jpeg,image/png,image/webp')
         self.assertContains(response, 'id="picture-canvas"')
         self.assertContains(response, 'Use this crop')
+
+
+@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend', SITE_URL='https://biin.example', REGISTRATION_RESPONSE_EMAIL='')
+class ConfirmationEmailTests(TestCase):
+    def setUp(self):
+        self.application = CampusAmbassadorApplication.objects.create(
+            full_name='Email <Applicant>', email='applicant@example.com',
+            campus_name='Example University', department='Science',
+        )
+
+    def test_confirmation_contains_attachment_and_private_download(self):
+        from django.core import mail
+        from django.test import RequestFactory
+        from registration.emails import send_application_confirmation
+        import re
+
+        send_application_confirmation(self.application, RequestFactory().get('/'))
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertEqual(message.to, ['applicant@example.com'])
+        self.assertEqual(message.attachments[0].mimetype, 'application/pdf')
+        self.assertTrue(message.attachments[0].content.startswith(b'%PDF'))
+        self.assertIn('Email &lt;Applicant&gt;', message.alternatives[0].content)
+        url = re.search(r'https://biin.example/\S+', message.body).group()
+        response = self.client.get(url.replace('https://biin.example', ''))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.content.startswith(b'%PDF'))
+        self.assertEqual(response['Cache-Control'], 'private, no-store')
+
+    @override_settings(REGISTRATION_RESPONSE_EMAIL='team@example.com')
+    def test_fixed_recipient(self):
+        from django.core import mail
+        from django.test import RequestFactory
+        from registration.emails import send_application_confirmation
+        send_application_confirmation(self.application, RequestFactory().get('/'))
+        self.assertEqual(mail.outbox[0].to, ['team@example.com'])
+
+    def test_random_links_reject_tampering_and_expiration(self):
+        from django.test import RequestFactory
+        from registration.emails import application_pdf_url
+        request = RequestFactory().get('/')
+        url = application_pdf_url(self.application, request).replace('https://biin.example', '')
+        self.assertNotEqual(url, application_pdf_url(self.application, request).replace('https://biin.example', ''))
+        self.assertEqual(self.client.get(url.replace('/pdf/', '/pdf/tampered')).status_code, 404)
+        with override_settings(REGISTRATION_PDF_LINK_MAX_AGE=-1):
+            self.assertEqual(self.client.get(url).status_code, 404)
+
+
+@override_settings(TURNSTILE_REQUIRE=True, TURNSTILE_SITE_KEY='site-key', TURNSTILE_SECRET_KEY='secret-key')
+class RegistrationTurnstileTests(TestCase):
+    @override_settings(TURNSTILE_REQUIRE=False)
+    @patch('registration.views.verify_registration_turnstile')
+    def test_disabled_turnstile_skips_verification_and_widget(self, verify):
+        response = self.client.get(reverse('registration_form'))
+        self.assertNotContains(response, 'challenges.cloudflare.com')
+        self.assertNotContains(response, 'cf-turnstile')
+        with patch('registration.views.CampusAmbassadorApplicationForm') as form_class:
+            form_class.return_value.is_valid.return_value = False
+            self.client.post(reverse('registration_form'), {})
+            form_class.return_value.add_error.assert_not_called()
+        verify.assert_not_called()
+
+    def verify_response(self, payload):
+        from unittest.mock import MagicMock
+        response = MagicMock()
+        response.__enter__.return_value.read.return_value = __import__('json').dumps(payload).encode()
+        return response
+
+    @patch('registration.turnstile.urlopen')
+    def test_valid_response_requires_expected_action_and_hostname(self, urlopen):
+        from registration.turnstile import verify_registration_turnstile
+        for payload, expected in [
+            ({'success': True, 'action': 'registration', 'hostname': 'testserver'}, True),
+            ({'success': False, 'action': 'registration', 'hostname': 'testserver'}, False),
+            ({'success': True, 'action': 'login', 'hostname': 'testserver'}, False),
+            ({'success': True, 'action': 'registration', 'hostname': 'other.example'}, False),
+            ([], False),
+        ]:
+            with self.subTest(payload=payload):
+                urlopen.return_value = self.verify_response(payload)
+                self.assertEqual(verify_registration_turnstile('token', 'testserver'), expected)
+        request = urlopen.call_args.args[0]
+        self.assertEqual(request.method, 'POST')
+        self.assertIn(b'secret=secret-key', request.data)
+        self.assertEqual(urlopen.call_args.kwargs['timeout'], 10)
+
+    @patch('registration.turnstile.urlopen')
+    def test_missing_oversize_tokens_and_missing_keys_are_rejected(self, urlopen):
+        from registration.turnstile import verify_registration_turnstile
+        self.assertFalse(verify_registration_turnstile('', 'testserver'))
+        self.assertFalse(verify_registration_turnstile('x' * 2049, 'testserver'))
+        with override_settings(TURNSTILE_SECRET_KEY=''):
+            with self.assertLogs('registration.turnstile', level='ERROR'):
+                self.assertFalse(verify_registration_turnstile('token', 'testserver'))
+        urlopen.assert_not_called()
+
+    @patch('registration.turnstile.urlopen')
+    def test_network_failure_and_invalid_json_are_rejected(self, urlopen):
+        from registration.turnstile import verify_registration_turnstile
+        from urllib.error import URLError
+        for error in (URLError('offline'), ValueError('invalid JSON')):
+            urlopen.side_effect = error
+            with self.assertLogs('registration.turnstile', level='WARNING'):
+                self.assertFalse(verify_registration_turnstile('token', 'testserver'))
+
+    @patch('registration.views.send_application_confirmation')
+    @patch('registration.views.CampusAmbassadorApplicationForm')
+    @patch('registration.views.verify_registration_turnstile', return_value=False)
+    def test_failed_verification_never_saves_or_sends(self, verify, form_class, send):
+        form = form_class.return_value
+        form.is_valid.return_value = True
+        response = self.client.post(reverse('registration_form'), {'cf-turnstile-response': 'invalid'})
+        self.assertEqual(response.status_code, 200)
+        verify.assert_called_once_with('invalid', 'testserver')
+        form.save.assert_not_called()
+        send.assert_not_called()
+        form.add_error.assert_called_once()
+        self.assertFalse(CampusAmbassadorApplication.objects.exists())
+
+    def test_form_includes_widget_without_exposing_secret(self):
+        response = self.client.get(reverse('registration_form'))
+        self.assertContains(response, 'data-sitekey="site-key"')
+        self.assertContains(response, 'data-action="registration"')
+        self.assertNotContains(response, 'secret-key')

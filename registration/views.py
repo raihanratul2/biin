@@ -1,7 +1,13 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.http import HttpResponse, Http404
+from django.shortcuts import redirect, render, get_object_or_404
+from django.conf import settings
+from django.core import signing
+import logging
+
+from .emails import send_application_confirmation
+from .turnstile import verify_registration_turnstile
 
 from .forms import CampusAmbassadorApplicationForm
 from .models import CampusAmbassadorApplication, RegistrationSetting
@@ -19,17 +25,50 @@ def registration_form(request):
 
     if request.method == 'POST':
         form = CampusAmbassadorApplicationForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
+        form_valid = form.is_valid()
+        verified = not settings.TURNSTILE_REQUIRE or verify_registration_turnstile(
+            request.POST.get('cf-turnstile-response', ''),
+            request.get_host().split(':')[0],
+        )
+        if not verified:
+            form.add_error(None, 'Security verification failed or expired. Please complete the verification and try again.')
+        if form_valid and verified:
+            application = form.save()
+            try:
+                send_application_confirmation(application, request)
+            except Exception:
+                logging.getLogger(__name__).exception('Confirmation email failed for application %s', application.pk)
+                messages.warning(request, 'Your application was saved, but the confirmation email could not be sent. Please contact BIIN for a copy.')
             return redirect('registration_success')
     else:
         form = CampusAmbassadorApplicationForm()
 
-    return render(request, 'registration_form.html', {'form': form, 'registration_open': setting.registration_open})
+    return render(request, 'registration_form.html', {
+        'form': form, 'registration_open': setting.registration_open,
+        'turnstile_site_key': settings.TURNSTILE_SITE_KEY,
+        'turnstile_required': settings.TURNSTILE_REQUIRE,
+    })
 
 
 def registration_success(request):
     return render(request, 'registration_success.html')
+
+
+def application_pdf_download(request, token):
+    from .pdf import build_application_pdf
+
+    try:
+        payload = signing.loads(token, salt='registration.pdf', max_age=settings.REGISTRATION_PDF_LINK_MAX_AGE)
+    except signing.BadSignature:
+        raise Http404('This download link is invalid or has expired.')
+    application = get_object_or_404(CampusAmbassadorApplication, pk=payload['application_id'])
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="biin_application.pdf"'
+    response['Cache-Control'] = 'private, no-store'
+    response['Referrer-Policy'] = 'no-referrer'
+    response['X-Robots-Tag'] = 'noindex, nofollow'
+    build_application_pdf(response, [application])
+    return response
 
 
 @login_required(login_url='login')

@@ -255,7 +255,7 @@ MEDIA_ROOT = BASE_DIR / os.getenv('DJANGO_MEDIA_ROOT', 'media')
 # Third-party integrations
 TURNSTILE_SITE_KEY = os.getenv('TURNSTILE_SITE_KEY', '')
 TURNSTILE_SECRET_KEY = os.getenv('TURNSTILE_SECRET_KEY', '')
-TURNSTILE_REQUIRE_AUTH = os.getenv('TURNSTILE_REQUIRE_AUTH', 'true').lower() in ['1', 'true', 'yes', 'on']
+TURNSTILE_REQUIRE = os.getenv('TURNSTILE_REQUIRE', os.getenv('TURNSTILE_REQUIRE_AUTH', 'false')).strip().lower() in ['1', 'true', 'yes', 'on']
 
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '')
@@ -264,3 +264,18 @@ GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '')
 BIIN_OFFICE_ADDRESS = os.getenv('BIIN_OFFICE_ADDRESS', 'SimpleTree Attalika (Level 19), 134 Gulshan Avenue, Dhaka 1212, Bangladesh')
 BIIN_CONTACT_EMAIL = os.getenv('BIIN_CONTACT_EMAIL', 'info@biin.org.bd')
 BIIN_CONTACT_PHONE = os.getenv('BIIN_CONTACT_PHONE', '+88 09640 123 701-3')
+
+# Amazon SES SMTP credentials (these are different from AWS API access keys).
+EMAIL_BACKEND = os.getenv('DJANGO_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+AWS_SES_REGION = os.getenv('AWS_SES_REGION', 'ap-south-1')
+EMAIL_HOST = os.getenv('EMAIL_HOST', f'email-smtp.{AWS_SES_REGION}.amazonaws.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = os.getenv('AWS_SES_SMTP_USERNAME', '')
+EMAIL_HOST_PASSWORD = os.getenv('AWS_SES_SMTP_PASSWORD', '')
+EMAIL_USE_TLS = True
+EMAIL_TIMEOUT = 15
+DEFAULT_FROM_EMAIL = os.getenv('DJANGO_DEFAULT_FROM_EMAIL', 'BIIN <noreply@biin.org.bd>')
+# Empty means send the confirmation to the email entered in the form.
+REGISTRATION_RESPONSE_EMAIL = os.getenv('REGISTRATION_RESPONSE_EMAIL', '')
+SITE_URL = os.getenv('SITE_URL', '').rstrip('/')
+REGISTRATION_PDF_LINK_MAX_AGE = int(os.getenv('REGISTRATION_PDF_LINK_MAX_AGE', '604800'))

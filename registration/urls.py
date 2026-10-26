@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('pdf/<str:token>/', views.application_pdf_download, name='application_pdf_download'),
     path('register/', views.registration_form, name='registration_form'),
     path('success/', views.registration_success, name='registration_success'),
     path('settings/', views.registration_settings, name='registration_settings'),

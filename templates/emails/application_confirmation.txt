@@ -1,0 +1,16 @@
+Dear {{ application.full_name }},
+
+Thank you for applying to the BIIN Campus Ambassador Program. We have received your application and our team will review it.
+
+Campus: {{ application.campus_name }}
+Department: {{ application.department }}
+
+A PDF copy of your submitted application is attached. You can also download it here:
+{{ pdf_url }}
+
+This private link expires in {{ link_hours|floatformat:0 }} hours. Please keep it confidential.
+
+If you have any questions, contact {{ contact_email }}.
+
+Best regards,
+BIIN Team

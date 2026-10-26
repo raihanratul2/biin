@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="{% static 'registration.css' %}">
 <script src="{% static 'photo-crop.js' %}" defer></script>
 <script src="{% static 'registration.js' %}" defer></script>
+{% if turnstile_required %}<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -228,6 +229,15 @@
           {% if form.declaration_terms.errors %}<div class="field-error" id="id_declaration_terms_error">{{ form.declaration_terms.errors }}</div>{% endif %}
         </div>
         </section>
+        {% if turnstile_required %}
+        <div class="registration-verification">
+          {% if turnstile_site_key %}
+          <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-action="registration" data-refresh-expired="auto" data-size="flexible"></div>
+          {% else %}
+          <p role="alert">Security verification is currently unavailable. Please try again later.</p>
+          {% endif %}
+        </div>
+        {% endif %}
         <div class="registration-actions">
           <button type="button" class="back-button" id="previous-step" hidden><span aria-hidden="true">←</span> Back</button>
           <span class="action-hint" id="action-hint">A little about you. A world of possibilities.</span>
