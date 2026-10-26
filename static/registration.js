@@ -102,14 +102,14 @@
             heading.append(title, edit);
             const list = document.createElement('dl');
             step.querySelectorAll('.field').forEach(field => {
-                const controls = [...field.querySelectorAll('input, select, textarea')];
+                const controls = [...field.querySelectorAll('input, select, textarea')].filter(control => control.name);
                 const label = field.querySelector('legend, label');
                 if (!label || !controls.length) return;
                 const term = document.createElement('dt');
                 term.textContent = label.textContent;
                 const detail = document.createElement('dd');
                 detail.textContent = field.contains(phone) ? phone.value || 'Not provided' : controls.filter(control => control.type !== 'checkbox' || control.checked)
-                    .map(control => control.tagName === 'SELECT' ? control.selectedOptions[0]?.textContent : control.value)
+                    .map(control => control.type === 'file' ? control.files[0]?.name : control.tagName === 'SELECT' ? control.selectedOptions[0]?.textContent : control.value)
                     .filter(Boolean).join(', ') || 'Not provided';
                 list.append(term, detail);
             });

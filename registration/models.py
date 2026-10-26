@@ -18,6 +18,7 @@ class CampusAmbassadorApplication(models.Model):
         ('Event Management', 'Event Management'),
     ]
 
+    picture = models.ImageField(upload_to='applications/photos/', default='')
     full_name = models.CharField(max_length=FIELD_LIMITS['full_name'])
     email = models.EmailField(max_length=FIELD_LIMITS['email'], unique=True)
     phone_number = models.CharField(max_length=FIELD_LIMITS['phone_number'])

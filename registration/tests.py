@@ -1,5 +1,16 @@
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, override_settings
+from django.core.files.uploadedfile import SimpleUploadedFile
+import io
+import tempfile
+from PIL import Image
+
+
+def uploaded_picture():
+    output = io.BytesIO()
+    Image.new("RGB", (300, 380), "navy").save(output, format="PNG")
+    return SimpleUploadedFile("portrait.png", output.getvalue(), content_type="image/png")
+
 from django.urls import reverse
 
 from registration.models import CampusAmbassadorApplication, RegistrationSetting
@@ -7,6 +18,23 @@ from registration.forms import CampusAmbassadorApplicationForm
 
 
 class CampusAmbassadorFlowTests(TestCase):
+    def setUp(self):
+        media = tempfile.TemporaryDirectory()
+        self.addCleanup(media.cleanup)
+        override = override_settings(MEDIA_ROOT=media.name)
+        override.enable()
+        self.addCleanup(override.disable)
+
+    def test_picture_is_required_and_must_be_an_image(self):
+        form = CampusAmbassadorApplicationForm(data={})
+        self.assertFalse(form.is_valid())
+        self.assertIn('picture', form.errors)
+        form = CampusAmbassadorApplicationForm(data={}, files={
+            'picture': SimpleUploadedFile('fake.png', b'not an image', content_type='image/png'),
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn('picture', form.errors)
+
     def test_declarations_must_be_accepted(self):
         form = CampusAmbassadorApplicationForm(data={})
         self.assertFalse(form.is_valid())
@@ -45,6 +73,7 @@ class CampusAmbassadorFlowTests(TestCase):
 
     def test_registration_submission_creates_record_and_redirects_to_success(self):
         payload = {
+            'picture': uploaded_picture(),
             'full_name': 'Ayesha Rahman',
             'email': 'ayesha@example.com',
             'phone_number': '8801700000000',
@@ -73,7 +102,12 @@ class CampusAmbassadorFlowTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('registration_success'))
-        self.assertTrue(CampusAmbassadorApplication.objects.filter(email='ayesha@example.com').exists())
+        application = CampusAmbassadorApplication.objects.get(email='ayesha@example.com')
+        self.assertTrue(application.picture.storage.exists(application.picture.name))
+        with application.picture.open('rb') as stored:
+            with Image.open(stored) as image:
+                self.assertEqual(image.format, 'JPEG')
+                self.assertEqual(image.size, (600, 760))
 
 
 class ApplicationPDFTests(TestCase):
@@ -224,3 +258,76 @@ class PDFWritingLineTests(TestCase):
         for blank, filled in zip(blank_positions, positions):
             self.assertAlmostEqual(blank[0], filled[0], places=5)
             self.assertAlmostEqual(blank[1], filled[1], places=5)
+
+
+class PhotoPDFTests(TestCase):
+    def test_uploaded_photo_is_embedded_and_keeps_one_page(self):
+        import re
+        from django.utils import timezone
+        from registration.pdf import build_application_pdf
+        from registration.pdf_layout import FIELD_LIMITS
+        with tempfile.TemporaryDirectory() as media, override_settings(MEDIA_ROOT=media):
+            application = CampusAmbassadorApplication(
+                **{name: 'W' * limit for name, limit in FIELD_LIMITS.items()},
+                created_at=timezone.now(),
+            )
+            application.picture.save('portrait.png', uploaded_picture(), save=False)
+            output = io.BytesIO()
+            build_application_pdf(output, [application])
+            pdf = output.getvalue()
+            self.assertEqual(len(re.findall(rb'/Type\s*/Page\b', pdf)), 1)
+            self.assertIn(b'/Width 600', pdf)
+            self.assertIn(b'/Height 760', pdf)
+
+
+class PhotoOptimizationTests(TestCase):
+    def picture_errors(self, upload):
+        form = CampusAmbassadorApplicationForm(data={}, files={'picture': upload})
+        form.is_valid()
+        return form
+
+    def test_oversized_photo_is_rejected(self):
+        photo = uploaded_picture()
+        photo.size = 3 * 1024 * 1024 + 1
+        form = self.picture_errors(photo)
+        self.assertIn('3 MB', str(form.errors['picture']))
+
+    def test_only_jpeg_png_and_webp_are_allowed(self):
+        for fmt in ('GIF', 'BMP'):
+            with self.subTest(format=fmt):
+                output = io.BytesIO()
+                Image.new('RGB', (100, 100), 'red').save(output, fmt)
+                form = self.picture_errors(SimpleUploadedFile('photo.' + fmt.lower(), output.getvalue()))
+                self.assertIn('JPG, PNG or WebP', str(form.errors['picture']))
+
+    def test_supported_formats_become_small_portrait_jpegs(self):
+        for fmt in ('JPEG', 'PNG', 'WEBP'):
+            with self.subTest(format=fmt):
+                output = io.BytesIO()
+                Image.new('RGB', (1600, 900), 'navy').save(output, fmt)
+                form = self.picture_errors(SimpleUploadedFile('photo.' + fmt.lower(), output.getvalue()))
+                self.assertNotIn('picture', form.errors)
+                result = form.cleaned_data['picture']
+                self.assertEqual(result.content_type, 'image/jpeg')
+                self.assertTrue(result.name.endswith('.jpg'))
+                self.assertLess(result.size, 200 * 1024)
+                with Image.open(result) as image:
+                    self.assertEqual(image.size, (600, 760))
+                    self.assertEqual(image.format, 'JPEG')
+                    self.assertNotIn('exif', image.info)
+
+    def test_transparency_is_flattened_on_white(self):
+        output = io.BytesIO()
+        Image.new('RGBA', (600, 760), (0, 0, 0, 0)).save(output, 'PNG')
+        form = self.picture_errors(SimpleUploadedFile('transparent.png', output.getvalue()))
+        self.assertNotIn('picture', form.errors)
+        with Image.open(form.cleaned_data['picture']) as image:
+            self.assertEqual(image.getpixel((300, 380)), (255, 255, 255))
+
+    def test_upload_ui_exposes_format_limit_and_crop_controls(self):
+        with override_settings(SECURE_SSL_REDIRECT=False):
+            response = self.client.get(reverse('registration_form'))
+        self.assertContains(response, 'Maximum 3 MB')
+        self.assertContains(response, 'image/jpeg,image/png,image/webp')
+        self.assertContains(response, 'id="picture-canvas"')
+        self.assertContains(response, 'Use this crop')

@@ -4,6 +4,7 @@
 {% block body_class %}registration-page{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'registration.css' %}">
+<script src="{% static 'photo-crop.js' %}" defer></script>
 <script src="{% static 'registration.js' %}" defer></script>
 {% endblock %}
 
@@ -21,7 +22,7 @@
       <img class="ambassador-art" src="{% static 'ambassador.svg' %}" alt="" width="320" height="280">
     </section>
 
-    <form method="post" class="registration-card" id="ambassador-form">
+    <form method="post" enctype="multipart/form-data" class="registration-card" id="ambassador-form">
       {% csrf_token %}
       <nav class="registration-progress" aria-label="Registration steps" hidden>
         <ol class="step-list">
@@ -74,6 +75,48 @@
             <div class="field-label-row">{{ form.website.label_tag }} <small class="character-count" id="id_website_count" data-character-count="id_website" hidden></small></div>
             {{ form.website }}
             {% if form.website.errors %}<div class="field-error" id="id_website_error">{{ form.website.errors }}</div>{% endif %}
+          </div>
+          <div class="field full-width">
+            {{ form.picture.label_tag }}
+            <div class="photo-upload">
+              <div class="photo-profile-box">
+                <span id="picture-placeholder" class="photo-placeholder" aria-hidden="true">
+                  <svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="22" r="12" fill="currentColor"/><path d="M10 58v-5a22 22 0 0 1 44 0v5" fill="currentColor"/></svg>
+                  <span>Passport photo</span>
+                </span>
+                <img id="picture-preview" class="photo-preview" alt="Your cropped passport photograph" hidden>
+                <span class="photo-profile-action" id="picture-action" aria-hidden="true">+ Add photo</span>
+                {{ form.picture }}
+              </div>
+              <div class="photo-upload-copy">
+                <p id="picture-help">JPG, PNG or WebP · Maximum 3 MB</p>
+                <p id="picture-status" role="status" aria-live="polite">Tap the photo box to upload.</p>
+              </div>
+            </div>
+            <dialog id="picture-editor" class="photo-dialog" aria-labelledby="picture-crop-title" aria-describedby="picture-crop-help">
+              <div class="photo-editor">
+              <div class="photo-crop-stage">
+                <canvas id="picture-canvas" width="600" height="760" aria-label="Passport crop preview. Drag to position the photo, or use the position sliders below."></canvas>
+              </div>
+              <div class="photo-crop-controls">
+                <strong id="picture-crop-title">Crop your passport photo</strong>
+                <p id="picture-crop-help">Drag to position, or use the sliders.</p>
+                <label for="picture-zoom">Zoom</label>
+                <input id="picture-zoom" type="range" min="1" max="3" step="0.01" value="1">
+                <label for="picture-x">Horizontal position</label>
+                <input id="picture-x" type="range" min="0" max="1" step="0.01" value="0.5">
+                <label for="picture-y">Vertical position</label>
+                <input id="picture-y" type="range" min="0" max="1" step="0.01" value="0.5">
+                <div class="photo-crop-actions">
+                  <button id="picture-apply" class="button" type="button">Use this crop</button>
+                  <button id="picture-reset" class="back-button" type="button">Reset crop</button>
+                  <button id="picture-cancel" class="back-button" type="button">Cancel</button>
+                </div>
+                <p id="picture-crop-status" role="status" aria-live="polite"></p>
+              </div>
+              </div>
+            </dialog>
+            {% if form.picture.errors %}<div class="field-error" id="id_picture_error">{{ form.picture.errors }}</div>{% endif %}
           </div>
           </div>
         </section>

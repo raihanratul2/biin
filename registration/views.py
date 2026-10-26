@@ -18,7 +18,7 @@ def registration_form(request):
         return render(request, 'registration_closed.html', {'registration_open': setting.registration_open})
 
     if request.method == 'POST':
-        form = CampusAmbassadorApplicationForm(request.POST)
+        form = CampusAmbassadorApplicationForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             return redirect('registration_success')

@@ -1,10 +1,19 @@
 from django import forms
 
 from .models import CampusAmbassadorApplication
+from .photos import ApplicationPhotoField, optimize_photo
 
 
 class CampusAmbassadorApplicationForm(forms.ModelForm):
     required_css_class = 'required'
+
+    picture = ApplicationPhotoField(
+        label='Passport photograph',
+        widget=forms.FileInput(attrs={
+            'accept': '.jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp',
+            'aria-describedby': 'picture-help picture-status',
+        }),
+    )
 
     declaration_accuracy = forms.BooleanField(required=True)
     declaration_terms = forms.BooleanField(required=True)
@@ -18,6 +27,7 @@ class CampusAmbassadorApplicationForm(forms.ModelForm):
     class Meta:
         model = CampusAmbassadorApplication
         fields = [
+            'picture',
             'full_name',
             'email',
             'phone_number',
@@ -71,6 +81,9 @@ class CampusAmbassadorApplicationForm(forms.ModelForm):
         for name, limit in FIELD_LIMITS.items():
             self.fields[name].widget.attrs['maxlength'] = limit
             self.fields[name].help_text = f'Maximum {limit} characters.'
+
+    def clean_picture(self):
+        return optimize_photo(self.cleaned_data['picture'])
 
     def clean_skills(self):
         skills = self.cleaned_data.get('skills')

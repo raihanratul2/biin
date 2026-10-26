@@ -1,6 +1,9 @@
 """Shared printable layout for completed applications and blank paper forms."""
 from xml.sax.saxutils import escape
 
+from PIL import Image as PILImage, ImageOps
+from reportlab.lib.utils import ImageReader
+
 from .pdf_layout import LONG_FIELDS, field_height
 
 from django.conf import settings
@@ -11,6 +14,43 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import (
     Flowable, Image, KeepInFrame, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle,
 )
+
+
+class PassportPhoto(Flowable):
+    """Fixed portrait box shared by uploaded photos and printable forms."""
+    width = 90
+    height = 114
+
+    def __init__(self, application):
+        super().__init__()
+        self.width, self.height = 90, 114
+        self.photo = None
+        picture = getattr(application, 'picture', None)
+        if picture:
+            try:
+                with picture.open('rb') as source:
+                    with PILImage.open(source) as original:
+                        portrait = ImageOps.exif_transpose(original).convert('RGB')
+                        portrait = ImageOps.fit(portrait, (600, 760))
+                        self.photo = ImageReader(portrait)
+            except (OSError, ValueError):
+                # Older submissions may reference a photo that is no longer stored.
+                pass
+
+    def draw(self):
+        canvas = self.canv
+        canvas.saveState()
+        if self.photo:
+            canvas.drawImage(self.photo, 0, 0, self.width, self.height)
+        else:
+            canvas.setFillColor(colors.HexColor('#596574'))
+            canvas.setFont('Helvetica', 9)
+            canvas.drawCentredString(self.width / 2, self.height / 2, 'Passport Size')
+            canvas.setFont('Helvetica', 8)
+            canvas.drawCentredString(self.width / 2, self.height / 2 - 13, 'Photograph')
+        canvas.setStrokeColor(colors.HexColor('#b9c5cf'))
+        canvas.rect(0, 0, self.width, self.height)
+        canvas.restoreState()
 
 
 class AnswerLine(Flowable):
@@ -125,12 +165,12 @@ SECTIONS = [
     ]),
     ('02  ACADEMIC INFORMATION', [
         [('Campus / institution', 'campus_name')],
-        [('Department', 'department'), ('Student ID', 'student_id')],
-        [('Academic year', 'academic_year'), ('Weekly availability', 'weekly_hours')],
+        [('Department', 'department'), ('Student ID', 'student_id'),
+         ('Academic year', 'academic_year'), ('Weekly availability', 'weekly_hours')],
     ]),
     ('03  SOCIAL & PROFESSIONAL PROFILES', [
-        [('Facebook', 'facebook_link'), ('LinkedIn', 'linkedin_link')],
-        [('Website / portfolio', 'website')],
+        [('Facebook', 'facebook_link'), ('LinkedIn', 'linkedin_link'),
+         ('Website / portfolio', 'website')],
     ]),
     ('04  EXPERIENCE & SKILLS', [
         [('Previous campus ambassador?', 'has_previous_campus_ambassador'),
@@ -222,7 +262,28 @@ def build_application_pdf(response, applications):
     def section(application, title, rows):
         data = [[text(title, heading), '']]
         spans = [('SPAN', (0, 0), (1, 0))]
-        if title.startswith('04 '):
+        widths = [doc.width / 2] * 2
+        if title.startswith('01 '):
+            widths = [doc.width - 110, 110]
+            personal = [('Full name', 'full_name'), ('Phone number', 'phone_number'),
+                        ('Email address', 'email'), ('Present address', 'address')]
+            data.extend([[field(application, caption, key), PassportPhoto(application) if i == 0 else '']
+                         for i, (caption, key) in enumerate(personal)])
+            spans.append(('SPAN', (1, 1), (1, 4)))
+            row_heights = [19, 30, 30, 30, 30]
+        elif title.startswith('02 ') or title.startswith('03 '):
+            columns = 4 if title.startswith('02 ') else 3
+            widths = [doc.width / columns] * columns
+            data = [[text(title, heading)] + [''] * (columns - 1)]
+            spans = [('SPAN', (0, 0), (columns - 1, 0))]
+            for row in rows:
+                cells = [field(application, caption, key) for caption, key in row]
+                if len(cells) == 1:
+                    spans.append(('SPAN', (0, len(data)), (columns - 1, len(data))))
+                    cells += [''] * (columns - 1)
+                data.append(cells)
+            row_heights = [19] + [30] * len(rows)
+        elif title.startswith('04 '):
             questions = []
             for caption, key in rows[0]:
                 questions.extend(field(application, caption, key))
@@ -240,7 +301,7 @@ def build_application_pdf(response, applications):
                     cells.append('')
                 data.append(cells)
             row_heights = [19] + [max(field_height(key) for _, key in row) for row in rows]
-        table = Table(data, colWidths=[doc.width / 2] * 2, rowHeights=row_heights)
+        table = Table(data, colWidths=widths, rowHeights=row_heights)
         table.setStyle(TableStyle(spans + [
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#edf1f5')),
             ('BOX', (0, 0), (-1, -1), .5, line),
