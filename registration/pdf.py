@@ -342,7 +342,10 @@ def build_application_pdf(response, applications):
                         ParagraphStyle('FormTitle', parent=heading, alignment=1, fontSize=12, leading=15)),
                    Spacer(1, 4)]
         if application:
-            meta = f'Application #{application.pk}  |  Submitted: {application.created_at:%d %b %Y}'
+            meta = (
+                f'Application #{application.pk}  |  Submitted: {application.created_at:%d %b %Y}'
+                if application.pk is not None else 'SAMPLE APPLICATION — Email delivery test'
+            )
         else:
             meta = 'Please complete in BLOCK LETTERS. Tick the applicable boxes.'
         content.extend([text(meta, label), Spacer(1, 8)])

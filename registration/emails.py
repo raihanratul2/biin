@@ -20,22 +20,23 @@ def application_pdf_url(application, request):
     return f'{settings.SITE_URL}{path}' if settings.SITE_URL else request.build_absolute_uri(path)
 
 
-def send_application_confirmation(application, request):
+def send_application_confirmation(application, request, *, recipient=None, test_email=False):
     context = {
         'application': application,
-        'pdf_url': application_pdf_url(application, request),
+        'pdf_url': '' if test_email else application_pdf_url(application, request),
+        'test_email': test_email,
         'link_hours': settings.REGISTRATION_PDF_LINK_MAX_AGE / 3600,
         'contact_email': settings.BIIN_CONTACT_EMAIL,
     }
     message = EmailMultiAlternatives(
-        subject='BIIN Campus Ambassador — Application received',
+        subject=('[TEST] ' if test_email else '') + 'BIIN Campus Ambassador — Application received',
         body=render_to_string('emails/application_confirmation.txt', context),
         from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[settings.REGISTRATION_RESPONSE_EMAIL or application.email],
+        to=[recipient or settings.REGISTRATION_RESPONSE_EMAIL or application.email],
         reply_to=[settings.BIIN_CONTACT_EMAIL], 
     )
     message.attach_alternative(render_to_string('emails/application_confirmation.html', context), 'text/html')
     pdf = BytesIO()
     build_application_pdf(pdf, [application])
     message.attach('biin_application.pdf', pdf.getvalue(), 'application/pdf')
-    message.send(fail_silently=False)
+    return message.send(fail_silently=False)

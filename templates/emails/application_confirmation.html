@@ -7,11 +7,14 @@
       <tr><td style="padding:32px;line-height:1.7;">
         <h1 style="font-size:24px;margin-top:0;">Application received</h1>
         <p>Dear {{ application.full_name }},</p>
+        {% if test_email %}<p><strong>This is a test email with sample data. No application was submitted.</strong></p>{% endif %}
         <p>Thank you for applying to the BIIN Campus Ambassador Program. We have received your application and our team will review it.</p>
         <p><strong>Campus:</strong> {{ application.campus_name }}<br><strong>Department:</strong> {{ application.department }}</p>
-        <p>A PDF copy of your submitted application is attached. You can also use the button below.</p>
+        <p>A PDF copy of your application is attached.{% if pdf_url %} You can also use the button below.{% endif %}</p>
+        {% if pdf_url %}
         <p style="margin:28px 0;"><a href="{{ pdf_url }}" style="display:inline-block;background:#123c32;color:#fff;padding:12px 22px;border-radius:6px;text-decoration:none;">Download application PDF</a></p>
         <p style="font-size:13px;color:#607086;">This private link expires in {{ link_hours|floatformat:0 }} hours. Please keep it confidential.</p>
+        {% endif %}
         <p>Questions? Email <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>.</p>
         <p>Best regards,<br><strong>BIIN Team</strong></p>
       </td></tr>
