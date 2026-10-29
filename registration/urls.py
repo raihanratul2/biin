@@ -8,6 +8,8 @@ urlpatterns = [
     path('success/', views.registration_success, name='registration_success'),
     path('settings/', views.registration_settings, name='registration_settings'),
     path('applications/', views.applications, name='applications'),
+    path('applications/<int:pk>/card/', views.ambassador_card, name='ambassador_card'),
+    path('applications/<int:pk>/card/download/', views.ambassador_card_download, name='ambassador_card_download'),
     path('export/excel/', views.export_excel, name='export_excel'),
     path('export/pdf/', views.export_pdf, name='export_pdf'),
 ]

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ application.full_name }} — Ambassador Card{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'card-editor.css' %}">
+<script src="{% static 'card-editor.js' %}" defer></script>
+{% endblock %}
+
+{% block content %}
+<section class="page-header">
+  <div class="container list-header-row">
+    <div>
+      <p class="eyebrow">Ambassador Card</p>
+      <h1>{{ application.full_name }}</h1>
+      <p>{{ application.campus_name }}</p>
+    </div>
+    <a class="button secondary" href="{% url 'applications' %}">Back to Submissions</a>
+  </div>
+</section>
+
+<section class="section light-section">
+  <div class="container card-workspace">
+    <div id="card-preview" class="card-preview" aria-describedby="card-instructions">
+      {{ card_svg }}
+    </div>
+    <aside class="card-controls">
+      <h2>Position the photo</h2>
+      <p id="card-instructions">Zoom in to make room to move the photo, then drag it into position. Movement stops at the frame edges to keep it filled.</p>
+      <form id="card-position-form" method="post" action="{% url 'ambassador_card' application.pk %}">
+        {% csrf_token %}
+        <fieldset id="card-position-controls">
+          <legend class="card-visually-hidden">Photo position</legend>
+          <label for="card-photo-scale">Zoom <output id="card-scale-value" for="card-photo-scale"></output></label>
+          <input id="card-photo-scale" name="card_photo_scale" type="range" min="1" max="3" step="0.01" value="{{ card_position.scale }}">
+          <label for="card-photo-x">Horizontal <output id="card-x-value" for="card-photo-x"></output></label>
+          <input id="card-photo-x" name="card_photo_x" type="range" min="0" max="0" step="0.1" value="{{ card_position.x }}">
+          <label for="card-photo-y">Vertical <output id="card-y-value" for="card-photo-y"></output></label>
+          <input id="card-photo-y" name="card_photo_y" type="range" min="0" max="0" step="0.1" value="{{ card_position.y }}">
+          <div class="card-control-actions">
+            <button class="button secondary" id="card-reset" type="button">Reset Position</button>
+            <button class="button primary" id="card-save" type="submit" disabled>Save Position</button>
+          </div>
+        </fieldset>
+      </form>
+      <p id="card-save-status" class="card-save-status" role="status" aria-live="polite">Saved position</p>
+      <a class="button secondary" id="card-download" href="{% url 'ambassador_card_download' application.pk %}">Download PNG</a>
+      <noscript><p>Enable JavaScript to move the photo and save its position.</p></noscript>
+    </aside>
+  </div>
+</section>
+{{ card_position|json_script:'card-position' }}
+{% endblock %}

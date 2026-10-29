@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.validators import MaxLengthValidator
+from django.core.validators import MaxLengthValidator, MinValueValidator, MaxValueValidator
 
 from .pdf_layout import FIELD_LIMITS
 
@@ -19,6 +19,9 @@ class CampusAmbassadorApplication(models.Model):
     ]
 
     picture = models.ImageField(upload_to='applications/photos/', default='')
+    card_photo_x = models.FloatField(default=0, validators=[MinValueValidator(-1080), MaxValueValidator(1080)])
+    card_photo_y = models.FloatField(default=0, validators=[MinValueValidator(-1080), MaxValueValidator(1080)])
+    card_photo_scale = models.FloatField(default=1, validators=[MinValueValidator(1), MaxValueValidator(3)])
     full_name = models.CharField(max_length=FIELD_LIMITS['full_name'])
     email = models.EmailField(max_length=FIELD_LIMITS['email'], unique=True)
     phone_number = models.CharField(max_length=FIELD_LIMITS['phone_number'])

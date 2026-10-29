@@ -1,0 +1,105 @@
+.card-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 740px) minmax(260px, 1fr);
+    gap: 28px;
+    align-items: start;
+}
+
+.card-preview {
+    overflow: hidden;
+    background: #fff;
+    box-shadow: var(--shadow);
+}
+
+.card-preview svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    touch-action: none;
+    user-select: none;
+}
+
+.card-preview [id="ambassador-portrait"] {
+    cursor: grab;
+}
+
+.card-preview.is-dragging [id="ambassador-portrait"] {
+    cursor: grabbing;
+}
+
+.card-controls {
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: #fff;
+}
+
+.card-controls h2 {
+    margin-top: 0;
+}
+
+.card-controls p {
+    color: var(--muted);
+}
+
+.card-controls fieldset {
+    padding: 0;
+    margin: 24px 0 0;
+    border: 0;
+    min-width: 0;
+}
+
+.card-controls label {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-weight: 600;
+}
+
+.card-controls output {
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+}
+
+.card-controls input[type="range"] {
+    width: 100%;
+    margin: 12px 0 24px;
+    padding: 0;
+    accent-color: var(--biin-blue);
+}
+
+.card-control-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.card-controls button:disabled,
+.card-controls a[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.card-save-status {
+    min-height: 1.6em;
+}
+
+.card-save-status.is-error {
+    color: #b42318;
+}
+
+.card-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+@media (max-width: 850px) {
+    .card-workspace {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

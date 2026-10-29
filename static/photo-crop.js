@@ -139,7 +139,7 @@
             }
             try {
                 const transfer = new DataTransfer();
-                confirmedFile = new File([blob], 'passport.jpg', { type: 'image/jpeg' });
+                confirmedFile = new File([blob], 'passport.png', { type: 'image/png' });
                 transfer.items.add(confirmedFile);
                 input.files = transfer.files;
                 input.setCustomValidity('');
@@ -151,6 +151,6 @@
             } catch {
                 setStatus('Your browser could not prepare the upload. Please try a newer browser.');
             }
-        }, 'image/jpeg', 0.82);
+        }, 'image/png');
     });
 })();

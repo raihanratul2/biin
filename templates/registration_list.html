@@ -49,6 +49,7 @@
         <tbody>
           {% for applicant in applicants %}
             <tr class="data-row"
+                data-card-url="{% url 'ambassador_card' applicant.pk %}"
                 data-full-name="{{ applicant.full_name|escape }}"
                 data-email="{{ applicant.email|escape }}"
                 data-phone="{{ applicant.phone_number|escape }}"
@@ -96,6 +97,7 @@
   <div class="modal-content">
     <button type="button" class="close-button" aria-label="Close details">&times;</button>
     <h2 id="modalName">Applicant Name</h2>
+    <p><a id="modalCardView" class="button secondary">View Card</a></p>
     <div class="detail-grid">
       <div><strong>Email</strong><p id="modalEmail"></p></div>
       <div><strong>Phone</strong><p id="modalPhone"></p></div>
@@ -153,6 +155,7 @@
     row.addEventListener('click', (event) => {
       if (event.target.closest('input, a, button')) return;
       document.getElementById('modalName').textContent = row.dataset.fullName || 'N/A';
+      document.getElementById('modalCardView').href = row.dataset.cardUrl;
       document.getElementById('modalEmail').textContent = row.dataset.email || 'N/A';
       document.getElementById('modalPhone').textContent = row.dataset.phone || 'N/A';
       document.getElementById('modalCampus').textContent = row.dataset.campus || 'N/A';

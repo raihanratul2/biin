@@ -2,6 +2,21 @@ from django import forms
 
 from .models import CampusAmbassadorApplication
 from .photos import ApplicationPhotoField, optimize_photo
+from .card_layout import constrain_photo_position
+
+
+class CardPhotoPositionForm(forms.ModelForm):
+    class Meta:
+        model = CampusAmbassadorApplication
+        fields = ['card_photo_x', 'card_photo_y', 'card_photo_scale']
+
+    def clean(self):
+        data = super().clean()
+        if all(field in data for field in self.Meta.fields):
+            position = {key: data[f'card_photo_{key}'] for key in ('x', 'y', 'scale')}
+            if constrain_photo_position(**position) != position:
+                raise forms.ValidationError('Keep the photo within the frame so no empty space is exposed.')
+        return data
 
 
 class CampusAmbassadorApplicationForm(forms.ModelForm):

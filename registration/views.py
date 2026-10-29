@@ -1,15 +1,18 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, JsonResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.conf import settings
 from django.core import signing
+from django.utils.safestring import mark_safe
+from django.views.decorators.http import require_http_methods
 import logging
 
 from .emails import send_application_confirmation
 from .turnstile import verify_registration_turnstile
 
-from .forms import CampusAmbassadorApplicationForm
+from .forms import CampusAmbassadorApplicationForm, CardPhotoPositionForm
+from .card_layout import application_photo_position
 from .models import CampusAmbassadorApplication, RegistrationSetting
 
 
@@ -77,6 +80,44 @@ def applications(request):
     applicants = CampusAmbassadorApplication.objects.all()
     setting, _ = RegistrationSetting.objects.get_or_create(pk=1)
     return render(request, 'registration_list.html', {'applicants': applicants, 'registration_open': setting.registration_open})
+
+
+@login_required(login_url='login')
+@user_passes_test(is_staff_user, login_url='login')
+@require_http_methods(['GET', 'POST'])
+def ambassador_card(request, pk):
+    from .cards import build_ambassador_card
+
+    application = get_object_or_404(CampusAmbassadorApplication, pk=pk)
+    if request.method == 'POST':
+        form = CardPhotoPositionForm(request.POST, instance=application)
+        if not form.is_valid():
+            response = JsonResponse({'errors': form.errors}, status=400)
+        else:
+            # Update only the card position, preserving other application edits.
+            application.save(update_fields=CardPhotoPositionForm.Meta.fields)
+            response = JsonResponse({'saved': True, 'position': application_photo_position(application)})
+    else:
+        response = render(request, 'ambassador_card.html', {
+            'application': application,
+            'card_svg': mark_safe(build_ambassador_card(application, inline=True).decode('utf-8')),
+            'card_position': application_photo_position(application),
+        })
+    response['Cache-Control'] = 'private, no-store'
+    return response
+
+
+@login_required(login_url='login')
+@user_passes_test(is_staff_user, login_url='login')
+def ambassador_card_download(request, pk):
+    from .cards import build_ambassador_card_png
+
+    application = get_object_or_404(CampusAmbassadorApplication, pk=pk)
+    response = HttpResponse(build_ambassador_card_png(application), content_type='image/png')
+    response['Content-Disposition'] = f'attachment; filename="biin_ambassador_{application.pk}.png"'
+    response['Cache-Control'] = 'private, no-store'
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response
 
 
 @login_required(login_url='login')
