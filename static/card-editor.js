@@ -8,6 +8,8 @@
     const controls = document.getElementById('card-position-controls');
     const save = document.getElementById('card-save');
     const download = document.getElementById('card-download');
+    const emailForm = document.getElementById('card-email-form');
+    const emailSend = document.getElementById('card-email-send');
     const status = document.getElementById('card-save-status');
     const inputs = {
         x: document.getElementById('card-photo-x'),
@@ -46,10 +48,11 @@
         document.getElementById('card-x-value').textContent = Math.round(position.x);
         document.getElementById('card-y-value').textContent = Math.round(position.y);
         save.disabled = !hasPhoto || !dirty() || saving;
+        emailSend.disabled = dirty() || saving;
         download.setAttribute('aria-disabled', String(dirty() || saving));
         download.tabIndex = dirty() || saving ? -1 : 0;
         status.classList.remove('is-error');
-        status.textContent = message || (dirty() ? 'Unsaved changes — save before downloading.' : 'Saved position');
+        status.textContent = message || (dirty() ? 'Unsaved changes — save before downloading or sending.' : 'Saved position');
     }
 
     function svgPoint(event) {
@@ -100,6 +103,14 @@
     download.addEventListener('click', event => {
         if (dirty() || saving) event.preventDefault();
     });
+    emailForm.addEventListener('submit', event => {
+        if (dirty() || saving || emailSend.disabled) {
+            event.preventDefault();
+            return;
+        }
+        emailSend.disabled = true;
+        emailSend.textContent = 'Sending…';
+    });
     window.addEventListener('beforeunload', event => {
         if (dirty()) {
             event.preventDefault();
@@ -132,6 +143,7 @@
             saving = false;
             controls.disabled = !hasPhoto;
             save.disabled = !hasPhoto || !dirty();
+            emailSend.disabled = dirty();
             download.setAttribute('aria-disabled', String(dirty()));
             download.tabIndex = dirty() ? -1 : 0;
         }

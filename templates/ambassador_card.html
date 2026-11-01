@@ -26,6 +26,14 @@
     </div>
     <aside class="card-controls">
       <h2>Position the photo</h2>
+      {% for message in messages %}
+      <p role="status">{{ message }}</p>
+      {% endfor %}
+      <form method="post" action="{% url 'ambassador_card' application.pk %}" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').textContent='Removing background…';">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="{% if background_removed %}remove_background_again{% else %}remove_background{% endif %}">
+        <button class="button secondary" type="submit">{% if background_removed %}Remove Background Again{% else %}Remove Background{% endif %}</button>
+      </form>
       <p id="card-instructions">Zoom in to make room to move the photo, then drag it into position. Movement stops at the frame edges to keep it filled.</p>
       <form id="card-position-form" method="post" action="{% url 'ambassador_card' application.pk %}">
         {% csrf_token %}
@@ -45,6 +53,12 @@
       </form>
       <p id="card-save-status" class="card-save-status" role="status" aria-live="polite">Saved position</p>
       <a class="button secondary" id="card-download" href="{% url 'ambassador_card_download' application.pk %}">Download PNG</a>
+      <form id="card-email-form" method="post" action="{% url 'ambassador_card' application.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="{% if card_mail_sent %}send_card_email_again{% else %}send_card_email{% endif %}">
+        <p>Send the selection email and card to {{ application.email }}.</p>
+        <button class="button primary" id="card-email-send" type="submit">{% if card_mail_sent %}Send Again{% else %}Send Card Email{% endif %}</button>
+      </form>
       <noscript><p>Enable JavaScript to move the photo and save its position.</p></noscript>
     </aside>
   </div>

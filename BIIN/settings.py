@@ -136,6 +136,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
 DEBUG = os.getenv('DEBUG', 'False').lower() in ['1', 'true', 'yes', 'on']
+DJANGO_ADMIN_ENABLED = os.getenv('DJANGO_ADMIN_ENABLED', 'true').strip().lower() in ['1', 'true', 'yes', 'on']
 ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', '').split(',') if h.strip()]
 # Security Settings for Production
 if not DEBUG:
@@ -253,6 +254,8 @@ MEDIA_ROOT = BASE_DIR / os.getenv('DJANGO_MEDIA_ROOT', 'media')
 
 
 # Third-party integrations
+REMOVE_BG_API_KEY = os.getenv('REMOVE_BG_API_KEY', '').strip()
+REMOVE_BG_TIMEOUT = int(os.getenv('REMOVE_BG_TIMEOUT', '45'))
 TURNSTILE_SITE_KEY = os.getenv('TURNSTILE_SITE_KEY', '')
 TURNSTILE_SECRET_KEY = os.getenv('TURNSTILE_SECRET_KEY', '')
 TURNSTILE_REQUIRE = os.getenv('TURNSTILE_REQUIRE', os.getenv('TURNSTILE_REQUIRE_AUTH', 'false')).strip().lower() in ['1', 'true', 'yes', 'on']
@@ -264,6 +267,7 @@ GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '')
 BIIN_OFFICE_ADDRESS = os.getenv('BIIN_OFFICE_ADDRESS', 'SimpleTree Attalika (Level 19), 134 Gulshan Avenue, Dhaka 1212, Bangladesh')
 BIIN_CONTACT_EMAIL = os.getenv('BIIN_CONTACT_EMAIL', 'info@biin.org.bd')
 BIIN_CONTACT_PHONE = os.getenv('BIIN_CONTACT_PHONE', '+88 09640 123 701-3')
+BIIN_TERMS_URL = os.getenv('BIIN_TERMS_URL', '').strip()
 
 # Amazon SES SMTP credentials (these are different from AWS API access keys).
 EMAIL_BACKEND = os.getenv('DJANGO_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')

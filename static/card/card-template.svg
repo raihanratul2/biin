@@ -24,8 +24,8 @@
 	.st20{font-family:'Arial-BoldMT';}
 	.st21{font-size:55.8289px;}
 	.st22{fill:#EBEBEB;}
-	.st23{font-size:59.6791px;}
-	.st24{font-size:21.1765px;}
+	.st23{font-size:66px;}
+	.st24{font-size:36px;}
 	.st25{fill:#EF4137;}
 	.st26{fill:#F6AB24;}
 	.st27{fill:#2389C4;}
@@ -73,7 +73,8 @@
 	<polygon class="st11" points="0,734.27 269.52,998.98 0,998.98  " />
 	<polygon class="st12" points="0,479.19 296.88,-3.24 0,-3.24  " />
 </g>
-<g id="ambassador-portrait"><defs><clipPath id="ambassador-photo-mask" clipPathUnits="userSpaceOnUse"><polygon points="441.24,1002.22 1080,1002.22 1080,172.58 553.48,172.58" /></clipPath></defs><g clip-path="url(#ambassador-photo-mask)"><rect x="441.24" y="172.58" width="638.76" height="829.64" fill="#FFFFFF" /><g id="ambassador-photo-placeholder" fill="#b3c3d7"><circle cx="780" cy="435" r="130" /><ellipse cx="780" cy="940" rx="275" ry="345" /></g><image id="ambassador-photo" x="441.24" y="172.58" width="638.76" height="829.64" preserveAspectRatio="xMidYMin slice" /></g></g><g>
+<g id="ambassador-portrait"><defs><clipPath id="ambassador-photo-mask" clipPathUnits="userSpaceOnUse"><polygon points="441.24,1002.22 1080,1002.22 1080,172.58 553.48,172.58" /></clipPath></defs><g clip-path="url(#ambassador-photo-mask)"><rect x="441.24" y="172.58" width="638.76" height="829.64" fill="#FFFFFF" /><g id="ambassador-photo-placeholder" fill="#b3c3d7"><circle cx="780" cy="435" r="130" /><ellipse cx="780" cy="940" rx="275" ry="345" /></g><image id="ambassador-photo" x="441.24" y="172.58" width="638.76" height="829.64" preserveAspectRatio="xMidYMin slice" /></g></g><g id="ambassador-content">
+	<g id="ambassador-heading" transform="translate(0 -30)">
 	<g>
 		<text transform="matrix(0.9991 -0.0415 0.0415 0.9991 50.913 278.4766)" class="st13 st14 st15">Meet our</text>
 		<path class="st16" d="M88.08,299.97c50.38-0.12,99.47-2.65,155.87-7.85c53.94-5.13,96.82-9.96,120.07-13.65" />
@@ -105,8 +106,9 @@
 		<path class="st19" d="M-6.92-186.83h125.13c2.13,0,3.85,1.72,3.85,3.85l0,0c0,2.13-1.72,3.85-3.85,3.85H-6.92    c-2.13,0-3.85-1.72-3.85-3.85l0,0C-10.77-185.11-9.05-186.83-6.92-186.83z" />
 		<path class="st22" d="M66.23-186.83h51.98c2.13,0,3.85,1.72,3.85,3.85l0,0c0,2.13-1.72,3.85-3.85,3.85H66.23    c-2.13,0-3.85-1.72-3.85-3.85l0,0C62.38-185.11,64.1-186.83,66.23-186.83z" />
 	</g>
-	<text transform="matrix(1 0 0 1 55.4388 746.9147)" class="st6 st20 st23" id="ambassador-name" data-max-width="390" textLength="390" lengthAdjust="spacingAndGlyphs">Applicant Name</text>
-	<text transform="matrix(1 0 0 1 250 785.4564)" class="st6 st20 st24" id="ambassador-campus" data-max-width="350" text-anchor="middle">Campus / Institution</text>
+	</g>
+	<text transform="matrix(1 0 0 1 50 660)" class="st6 st20 st23" id="ambassador-name" data-max-width="415" textLength="415" lengthAdjust="spacingAndGlyphs">Applicant Name</text>
+	<text transform="matrix(1 0 0 1 250 713)" class="st19 st20 st24" id="ambassador-campus" data-max-width="390" text-anchor="middle">Campus / Institution</text>
 </g>
 <g>
 	<g>

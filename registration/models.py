@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.core.validators import MaxLengthValidator, MinValueValidator, MaxValueValidator
 
 from .pdf_layout import FIELD_LIMITS
@@ -19,6 +20,8 @@ class CampusAmbassadorApplication(models.Model):
     ]
 
     picture = models.ImageField(upload_to='applications/photos/', default='')
+    card_cutout = models.ImageField(upload_to='applications/cutouts/', blank=True, default='')
+    card_cutout_source = models.CharField(max_length=500, blank=True, default='')
     card_photo_x = models.FloatField(default=0, validators=[MinValueValidator(-1080), MaxValueValidator(1080)])
     card_photo_y = models.FloatField(default=0, validators=[MinValueValidator(-1080), MaxValueValidator(1080)])
     card_photo_scale = models.FloatField(default=1, validators=[MinValueValidator(1), MaxValueValidator(3)])
@@ -62,3 +65,35 @@ class RegistrationSetting(models.Model):
 
     def __str__(self):
         return 'Registration Open' if self.registration_open else 'Registration Closed'
+
+
+class IntegrationRecord(models.Model):
+    class Kind(models.TextChoices):
+        CONFIRMATION = 'confirmation', 'Application confirmation email'
+        SELECTION = 'selection', 'Ambassador card email'
+        REMOVE_BG = 'remove_bg', 'remove.bg API call'
+
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        SUCCESS = 'success', 'Successful'
+        FAILED = 'failed', 'Failed'
+
+    kind = models.CharField(max_length=20, choices=Kind.choices, db_index=True)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING, db_index=True)
+    application = models.ForeignKey(CampusAmbassadorApplication, null=True, blank=True,
+                                    on_delete=models.SET_NULL, related_name='integration_records')
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    recipient = models.EmailField(blank=True)
+    subject = models.CharField(max_length=255, blank=True)
+    backend = models.CharField(max_length=255, blank=True)
+    test_email = models.BooleanField(default=False)
+    http_status = models.PositiveSmallIntegerField(null=True, blank=True)
+    error_type = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.get_kind_display()} — {self.get_status_display()}'

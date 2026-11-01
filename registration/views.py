@@ -13,7 +13,7 @@ from .turnstile import verify_registration_turnstile
 
 from .forms import CampusAmbassadorApplicationForm, CardPhotoPositionForm
 from .card_layout import application_photo_position
-from .models import CampusAmbassadorApplication, RegistrationSetting
+from .models import CampusAmbassadorApplication, RegistrationSetting, IntegrationRecord
 
 
 def is_staff_user(user):
@@ -89,6 +89,42 @@ def ambassador_card(request, pk):
     from .cards import build_ambassador_card
 
     application = get_object_or_404(CampusAmbassadorApplication, pk=pk)
+    if request.method == 'POST' and request.POST.get('action') in {'remove_background', 'remove_background_again'}:
+        from .background_removal import remove_card_background, BackgroundRemovalError
+
+        try:
+            remove_card_background(application, force=request.POST.get('action') == 'remove_background_again',
+                                   actor=request.user)
+        except BackgroundRemovalError as exc:
+            messages.error(request, str(exc))
+        else:
+            messages.success(request, 'Photo background removed.')
+        response = redirect('ambassador_card', pk=pk)
+        response['Cache-Control'] = 'private, no-store'
+        return response
+    card_mail_sent = application.integration_records.filter(
+        kind=IntegrationRecord.Kind.SELECTION, status=IntegrationRecord.Status.SUCCESS,
+        test_email=False, recipient=application.email,
+    ).exists()
+    if request.method == 'POST' and request.POST.get('action') in {'send_card_email', 'send_card_email_again'}:
+        from .emails import send_ambassador_selection
+
+        if card_mail_sent and request.POST.get('action') != 'send_card_email_again':
+            messages.info(request, 'The card email was already sent. Use Send Again to resend it.')
+        else:
+            try:
+                sent = send_ambassador_selection(application, request)
+            except Exception:
+                logging.getLogger(__name__).exception('Card email failed for application %s', application.pk)
+                messages.error(request, 'Could not send the card email. Please try again.')
+            else:
+                if sent == 1:
+                    messages.success(request, 'Card email accepted for sending.')
+                else:
+                    messages.error(request, 'The mail backend did not accept the card email. Please try again.')
+        response = redirect('ambassador_card', pk=pk)
+        response['Cache-Control'] = 'private, no-store'
+        return response
     if request.method == 'POST':
         form = CardPhotoPositionForm(request.POST, instance=application)
         if not form.is_valid():
@@ -100,8 +136,12 @@ def ambassador_card(request, pk):
     else:
         response = render(request, 'ambassador_card.html', {
             'application': application,
+            'card_mail_sent': card_mail_sent,
             'card_svg': mark_safe(build_ambassador_card(application, inline=True).decode('utf-8')),
             'card_position': application_photo_position(application),
+            'background_removed': bool(application.card_cutout
+                                       and application.card_cutout_source == application.picture.name
+                                       and application.card_cutout.storage.exists(application.card_cutout.name)),
         })
     response['Cache-Control'] = 'private, no-store'
     return response

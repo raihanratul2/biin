@@ -1,0 +1,24 @@
+Dear {{ application.full_name }},
+{% if test_email %}
+This is a test email with sample data. No application was submitted and no selection was made.
+{% endif %}
+Congratulations! You're selected as a BIIN Campus Ambassador representing {{ application.campus_name }}.
+
+We look forward to working with you to connect students, encourage innovation and create opportunities on your campus.
+
+Your official Campus Ambassador card is included with this email. Save it and share your new role with your campus community.
+
+Our team will share the next steps and onboarding details with you.
+
+Welcome aboard,
+The BIIN Team
+
+Bangladesh ICT and Innovation Network
+Website: {{ site_url }}
+About BIIN: {{ about_url }}
+Program terms: {{ terms_url }}
+Contact: {{ contact_url }}
+Email: {{ contact_email }}
+Phone: {{ contact_phone }}
+{{ office_address }}
+© {{ year }} BIIN. All rights reserved.

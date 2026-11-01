@@ -18,3 +18,12 @@ If you have any questions, contact {{ contact_email }}.
 
 Best regards,
 BIIN Team
+
+Bangladesh ICT and Innovation Network
+Website: {{ site_url }}
+About BIIN: {{ about_url }}
+Program terms: {{ terms_url }}
+Contact: {{ contact_url }}
+Phone: {{ contact_phone }}
+{{ office_address }}
+© {{ year }} BIIN. All rights reserved.

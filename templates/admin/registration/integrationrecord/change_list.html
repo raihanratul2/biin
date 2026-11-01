@@ -1,0 +1,12 @@
+{% extends "admin/change_list.html" %}
+{% block content_title %}
+{{ block.super }}
+<div class="module" style="padding:16px;">
+  <p style="margin:0;"><strong>All-time totals:</strong>
+    remove.bg API calls: {{ integration_totals.api_calls }} &nbsp;|&nbsp;
+    Email attempts: {{ integration_totals.mail_attempts }} &nbsp;|&nbsp;
+    Emails accepted by backend: {{ integration_totals.mail_accepted }} &nbsp;|&nbsp;
+    Failed attempts: {{ integration_totals.failures }}</p>
+  <p style="margin-bottom:0;">Email success means the configured backend accepted the message; inbox delivery is not tracked. Test emails are marked in the records.</p>
+</div>
+{% endblock %}

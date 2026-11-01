@@ -23,7 +23,7 @@ from .models import CampusAmbassadorApplication
 from .views import ambassador_card_download
 
 
-class TestEmailCommandTests(SimpleTestCase):
+class TestEmailCommandTests(TestCase):
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend')
     @patch('registration.management.commands.test_email.send_application_confirmation', return_value=1)
     @patch('builtins.input', return_value='recipient@example.com')
@@ -63,13 +63,38 @@ class AmbassadorCardTests(SimpleTestCase):
         )
         card = build_ambassador_card(application)
         root = ET.fromstring(card)
-        for field, value in [('name', application.full_name), ('campus', application.campus_name)]:
-            element = root.find(f".//*[@id='ambassador-{field}']")
-            self.assertEqual(element.text, ' '.join(value.split()))
-            self.assertEqual(element.attrib['textLength'], element.attrib['data-max-width'])
+        element = root.find(".//*[@id='ambassador-name']")
+        self.assertEqual(element.text, ' '.join(application.full_name.split()))
+        self.assertEqual(element.attrib['textLength'], element.attrib['data-max-width'])
         self.assertNotIn(b'Hamim Khan', card)
         self.assertNotIn(b'Govt. Graphics Arts Institute', card)
         self.assertIn(b'&lt;B&gt; &amp;', card)
+
+    def test_campus_wraps_at_fixed_font_size(self):
+        from reportlab.pdfbase.pdfmetrics import stringWidth
+
+        for campus, count in [('Test Campus', 1), ('Dhaka International University', 2),
+                              ('Science & Technology Institute', 2),
+                              ('Science & Technology Institute ' * 5, 5), ('W' * 60, 5)]:
+            with self.subTest(campus=campus):
+                application = CampusAmbassadorApplication(full_name='Applicant', campus_name=campus)
+                root = ET.fromstring(build_ambassador_card(application))
+                element = root.find(".//*[@id='ambassador-campus']")
+                self.assertEqual(element.attrib['font-size'], '36px')
+                self.assertNotIn('textLength', element.attrib)
+                self.assertIn('st19', element.attrib['class'].split())
+                self.assertEqual(root.find(".//*[@id='ambassador-heading']").attrib['transform'],
+                                 'translate(0 -30)')
+                lines = list(element)
+                self.assertEqual(len(lines), count)
+                content = root.find(".//*[@id='ambassador-content']")
+                offset = float(content.attrib['transform'].removeprefix('translate(0 ').removesuffix(')'))
+                self.assertAlmostEqual(195 + offset,
+                                       1002.07 - (721 + (count - 1) * 44 + offset), places=3)
+                for line in lines:
+                    self.assertLessEqual(stringWidth(line.text, 'Helvetica-Bold', 36), 390)
+                if campus == 'Dhaka International University':
+                    self.assertEqual(' '.join(line.text for line in lines), campus)
 
     def test_portrait_is_embedded_and_clipped_in_the_original_diagonal(self):
         photo = BytesIO()

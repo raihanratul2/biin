@@ -1,24 +1,14 @@
-<!doctype html>
-<html lang="en">
-<body style="margin:0;background:#f3f5f8;font-family:Arial,sans-serif;color:#243247;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center" style="padding:32px 16px;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#fff;border-radius:12px;">
-      <tr><td style="padding:28px 32px;background:#123c32;color:#fff;"><strong style="font-size:26px;">BIIN</strong><br>Campus Ambassador Program</td></tr>
-      <tr><td style="padding:32px;line-height:1.7;">
-        <h1 style="font-size:24px;margin-top:0;">Application received</h1>
-        <p>Dear {{ application.full_name }},</p>
-        {% if test_email %}<p><strong>This is a test email with sample data. No application was submitted.</strong></p>{% endif %}
-        <p>Thank you for applying to the BIIN Campus Ambassador Program. We have received your application and our team will review it.</p>
-        <p><strong>Campus:</strong> {{ application.campus_name }}<br><strong>Department:</strong> {{ application.department }}</p>
-        <p>A PDF copy of your application is attached.{% if pdf_url %} You can also use the button below.{% endif %}</p>
-        {% if pdf_url %}
-        <p style="margin:28px 0;"><a href="{{ pdf_url }}" style="display:inline-block;background:#123c32;color:#fff;padding:12px 22px;border-radius:6px;text-decoration:none;">Download application PDF</a></p>
-        <p style="font-size:13px;color:#607086;">This private link expires in {{ link_hours|floatformat:0 }} hours. Please keep it confidential.</p>
-        {% endif %}
-        <p>Questions? Email <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>.</p>
-        <p>Best regards,<br><strong>BIIN Team</strong></p>
-      </td></tr>
-    </table>
-  </td></tr></table>
-</body>
-</html>
+{% extends 'emails/base.html' %}
+{% block email_content %}
+<p style="margin-top:0;">Dear {{ application.full_name }},</p>
+<h1 style="margin:0 0 16px;color:#20448C;font-size:26px;line-height:1.3;">Thank you for applying!</h1>
+<p>We have received your application to the <strong>BIIN Campus Ambassador Program</strong>. Our team will review your application and contact you with updates.</p>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:20px 0;background:#f0f4fb;border-left:4px solid #F49E1E;"><tr><td style="padding:16px;"><strong style="color:#20448C;">Campus:</strong> {{ application.campus_name }}<br><strong style="color:#20448C;">Department:</strong> {{ application.department }}</td></tr></table>
+<p>A PDF copy of your application is attached for your records.{% if pdf_url %} You can also download it below.{% endif %}</p>
+{% if pdf_url %}
+<table role="presentation" cellspacing="0" cellpadding="0" style="margin:24px 0;"><tr><td bgcolor="#20448C" style="border-radius:6px;"><a href="{{ pdf_url }}" style="display:inline-block;padding:13px 22px;color:#ffffff;text-decoration:none;font-weight:bold;">Download application PDF</a></td></tr></table>
+<p style="font-size:12px;color:#607086;">This private link expires in {{ link_hours|floatformat:0 }} hours. Please keep it confidential.</p>
+{% endif %}
+<p>For any questions, reply to this email or contact <a href="mailto:{{ contact_email }}" style="color:#0F4D9F;">{{ contact_email }}</a>.</p>
+<p style="margin-bottom:0;">Best regards,<br><strong style="color:#20448C;">The BIIN Team</strong></p>
+{% endblock %}
