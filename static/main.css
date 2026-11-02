@@ -30,6 +30,54 @@ body {
     line-height: 1.6;
 }
 
+.site-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+.site-main {
+    flex: 1 0 auto;
+    min-width: 0;
+}
+
+.site-layout > .site-header,
+.site-layout > .site-footer {
+    flex-shrink: 0;
+}
+
+.not-found-page {
+    padding: 64px 0;
+}
+
+.not-found-code {
+    margin: 0;
+    color: var(--biin-blue);
+    font-size: clamp(6rem, 18vw, 10rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.06em;
+}
+
+.not-found-page h1 {
+    margin: 20px 0 12px;
+    color: var(--biin-blue);
+}
+
+.not-found-description {
+    margin: 0 auto 28px;
+    max-width: 440px;
+    color: var(--muted);
+}
+
+.not-found-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
 img {
     max-width: 100%;
 }
