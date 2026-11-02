@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ ambassador_name }} — BIIN Campus Ambassador{% endblock %}
+{% block extra_head %}
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BIIN">
+<meta property="og:title" content="{{ ambassador_name }} — BIIN Campus Ambassador">
+<meta property="og:description" content="Proudly representing {{ campus_name }} as a BIIN Campus Ambassador.">
+<meta property="og:url" content="{{ card_share_url }}">
+<meta property="og:image" content="{{ card_image_url }}">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1080">
+<meta property="og:image:height" content="1080">
+<meta property="og:image:alt" content="BIIN Campus Ambassador card for {{ ambassador_name }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ ambassador_name }} — BIIN Campus Ambassador">
+<meta name="twitter:description" content="Proudly representing {{ campus_name }}.">
+<meta name="twitter:image" content="{{ card_image_url }}">
+<meta name="twitter:image:alt" content="BIIN Campus Ambassador card for {{ ambassador_name }}">
+<link rel="stylesheet" href="{% static 'card-share.css' %}">
+<script src="{% static 'card-share.js' %}" defer></script>
+{% endblock %}
+{% block content %}
+<section class="section light-section">
+  <div class="container card-share-layout">
+    <img class="shared-card-photo" src="{{ card_image_url }}" width="360" height="360" alt="BIIN Campus Ambassador card for {{ ambassador_name }}">
+    <div class="card-share-controls">
+      <p class="eyebrow">BIIN Campus Ambassador</p>
+      <h1>{{ ambassador_name }}</h1>
+      <p>Representing {{ campus_name }}. Celebrate your new role with your campus community.</p>
+      <a class="button primary" href="{{ card_download_url }}" download="biin_ambassador_card.png">Download photo</a>
+      <h2>Share your card</h2>
+      <div class="card-share-options" aria-label="Share options">
+        <a class="button secondary" href="{{ facebook_share_url }}" target="_blank" rel="noopener noreferrer"><img src="{% static 'social/facebook.svg' %}" width="18" height="18" alt="">Facebook</a>
+        <a class="button secondary" href="{{ whatsapp_share_url }}" target="_blank" rel="noopener noreferrer"><img src="{% static 'social/whatsapp.svg' %}" width="18" height="18" alt="">WhatsApp</a>
+        <a class="button secondary" href="{{ x_share_url }}" target="_blank" rel="noopener noreferrer"><img src="{% static 'social/x.svg' %}" width="18" height="18" alt="">X</a>
+        <a class="button secondary" href="#instagram"><img src="{% static 'social/instagram.svg' %}" width="18" height="18" alt="">Instagram</a>
+        <a class="button secondary" href="{{ linkedin_share_url }}" target="_blank" rel="noopener noreferrer"><img src="{% static 'social/linkedin.svg' %}" width="18" height="18" alt="">LinkedIn</a>
+        <button class="button secondary" id="share-photo" type="button" data-image-url="{{ card_image_url }}" hidden>Share photo…</button>
+      </div>
+      <div id="instagram" class="instagram-instructions">
+        <h2>Share to Instagram</h2>
+        <p>Download your photo, then open Instagram and upload it as a post or story. On supported phones, use “Share photo…” and choose Instagram.</p>
+        <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Open Instagram &rarr;</a>
+      </div>
+      <p id="share-status" role="status" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+{% endblock %}

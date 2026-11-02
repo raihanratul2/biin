@@ -1,11 +1,13 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ email_title }} — BIIN</title></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ email_title }} — BIIN</title>
+<style>@media only screen and (max-width:480px){.card-column{display:block!important;width:auto!important;}.card-column img{margin:0 auto;}}</style>
+</head>
 <body style="margin:0;padding:0;background:#edf2f9;font-family:Arial,Helvetica,sans-serif;color:#243247;">
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">{{ preheader }}</div>
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#edf2f9;"><tr><td align="center" style="padding:28px 12px;">
     <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="width:100%;max-width:600px;background:#ffffff;border:1px solid #dbe4f0;border-radius:12px;overflow:hidden;">
-      <tr><td style="height:6px;background:#F49E1E;font-size:0;line-height:0;">&nbsp;</td></tr>
+      <tr><td style="height:6px;background:#636BB0;font-size:0;line-height:0;">&nbsp;</td></tr>
       <tr><td style="padding:24px;border-bottom:1px solid #e3eaf4;">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
           <td width="140" style="width:140px;vertical-align:middle;"><a href="{{ site_url }}"><img src="cid:biin-logo" width="130" alt="BIIN" style="display:block;width:130px;max-width:100%;height:auto;border:0;"></a></td>
@@ -16,12 +18,20 @@
         {% if test_email %}<p style="padding:12px 16px;margin:0 0 24px;background:#fff4dd;border-left:4px solid #F49E1E;"><strong>This is a test email with sample data. No application was submitted and no selection was made.</strong></p>{% endif %}
         {% block email_content %}{% endblock %}
       </td></tr>
-      <tr><td style="padding:26px 24px;background:#20448C;color:#ffffff;font-size:12px;line-height:1.8;">
-        <p style="margin:0 0 8px;font-size:15px;font-weight:bold;">Bangladesh ICT and Innovation Network</p>
-        <p style="margin:0 0 16px;color:#e1e9fa;">Empowering youth through ICT, innovation and community.</p>
-        <p style="margin:0 0 14px;"><a href="{{ site_url }}" style="color:#ffffff;">Website</a> &nbsp;·&nbsp; <a href="{{ about_url }}" style="color:#ffffff;">About BIIN</a> &nbsp;·&nbsp; <a href="{{ terms_url }}" style="color:#ffffff;">Program terms</a> &nbsp;·&nbsp; <a href="{{ contact_url }}" style="color:#ffffff;">Contact</a></p>
-        <p style="margin:0;color:#e1e9fa;"><a href="mailto:{{ contact_email }}" style="color:#ffffff;">{{ contact_email }}</a><br>{{ contact_phone }}<br>{{ office_address }}</p>
-        <p style="margin:18px 0 0;padding-top:14px;border-top:1px solid #5471a7;color:#d7e2f6;">&copy; {{ year }} BIIN. All rights reserved.<br>This email relates to your BIIN Campus Ambassador application.</p>
+      <tr><td class="email-footer" style="padding:28px 24px;background:#636BB0;color:#ffffff;font-size:12px;line-height:1.8;">
+        <p style="margin:0 0 4px;color:#ffffff;font-size:20px;font-weight:bold;letter-spacing:1px;">BIIN</p>
+        <p style="margin:0 0 8px;color:#ffffff;font-size:14px;font-weight:bold;">Bangladesh ICT and Innovation Network</p>
+        <p style="margin:0 0 18px;color:#ffffff;">Empowering youth through ICT, innovation and community.</p>
+        <p style="margin:0 0 18px;color:#ffffff;"><a href="{{ site_url }}" style="color:#ffffff;font-weight:bold;text-decoration:underline;">Website</a> &nbsp;·&nbsp; <a href="{{ about_url }}" style="color:#ffffff;font-weight:bold;text-decoration:underline;">About BIIN</a> &nbsp;·&nbsp; <a href="{{ terms_url }}" style="color:#ffffff;font-weight:bold;text-decoration:underline;">Program terms</a> &nbsp;·&nbsp; <a href="{{ contact_url }}" style="color:#ffffff;font-weight:bold;text-decoration:underline;">Contact</a></p>
+        <p style="margin:0 0 10px;color:#ffffff;"><a href="mailto:{{ contact_email }}" style="color:#ffffff;font-weight:bold;text-decoration:underline;">{{ contact_email }}</a><br>{{ contact_phone }}</p>
+        <p style="margin:0;color:#ffffff;">{{ office_address }} &nbsp;<a href="{{ maps_url }}" style="color:#ffffff;font-weight:bold;text-decoration:underline;">Maps</a></p>
+        <p style="margin:20px 0 0;padding-top:16px;border-top:1px solid #ffffff;color:#ffffff;">&copy; {{ year }} BIIN. All rights reserved.<br>This email relates to your BIIN Campus Ambassador application.</p>
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:10px;color:#ffffff;font-size:11px;line-height:1.8;">
+          <tr>
+            <td style="color:#ffffff;vertical-align:top;">This is an automated email. You do not need to reply to this email.</td>
+            <td align="right" style="padding-left:12px;color:#ffffff;text-align:right;vertical-align:top;white-space:nowrap;">Developed by <a href="https://softsync.bd" style="color:#ffffff;font-weight:bold;text-decoration:underline;">SoftsyncBD</a></td>
+          </tr>
+        </table>
       </td></tr>
     </table>
   </td></tr></table>

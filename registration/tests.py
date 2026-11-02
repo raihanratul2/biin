@@ -23,6 +23,7 @@ from .models import CampusAmbassadorApplication
 from .views import ambassador_card_download
 
 
+@override_settings(DEBUG=True)
 class TestEmailCommandTests(TestCase):
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend')
     @patch('registration.management.commands.test_email.send_application_confirmation', return_value=1)
@@ -36,6 +37,13 @@ class TestEmailCommandTests(TestCase):
     def test_invalid_address_is_rejected(self):
         with self.assertRaises(CommandError):
             call_command('test_email', to='invalid')
+
+    @override_settings(DEBUG=False)
+    @patch('builtins.input')
+    def test_command_is_disabled_in_production_before_prompting(self, prompt):
+        with self.assertRaisesMessage(CommandError, 'only when DEBUG=True'):
+            call_command('test_email', to='recipient@example.com')
+        prompt.assert_not_called()
 
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend')
     def test_console_backend_does_not_report_real_delivery(self):

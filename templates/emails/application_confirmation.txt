@@ -25,5 +25,7 @@ About BIIN: {{ about_url }}
 Program terms: {{ terms_url }}
 Contact: {{ contact_url }}
 Phone: {{ contact_phone }}
-{{ office_address }}
+{{ office_address }} — Maps: {{ maps_url }}
 © {{ year }} BIIN. All rights reserved.
+This is an automated email. You do not need to reply to this email.
+Developed by SoftsyncBD — https://softsync.bd

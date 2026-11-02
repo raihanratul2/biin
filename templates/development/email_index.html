@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Development email previews — BIIN{% endblock %}
+{% block content %}
+<section class="section"><div class="container">
+  <p class="eyebrow">Development only</p>
+  <h1>Email previews</h1>
+  <p>These previews use sample data. No emails are sent and no applications are saved.</p>
+  <ul>
+    <li><a href="{% url 'development:confirmation' %}">Application confirmation</a> · <a href="{% url 'development:confirmation' %}?format=txt">Plain text</a> · <a href="{% url 'development:confirmation' %}?test=1">Test banner</a></li>
+    <li><a href="{% url 'development:selection' %}">Ambassador selection</a> · <a href="{% url 'development:selection' %}?format=txt">Plain text</a> · <a href="{% url 'development:selection' %}?test=1">Test banner</a></li>
+    <li><a href="{% url 'development:card_share' %}">Card share page</a></li>
+  </ul>
+</div></section>
+{% endblock %}

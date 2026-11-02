@@ -14,6 +14,7 @@ from .turnstile import verify_registration_turnstile
 from .forms import CampusAmbassadorApplicationForm, CardPhotoPositionForm
 from .card_layout import application_photo_position
 from .models import CampusAmbassadorApplication, RegistrationSetting, IntegrationRecord
+from .card_sharing import CARD_SHARE_SALT, ambassador_card_links
 
 
 def is_staff_user(user):
@@ -72,6 +73,45 @@ def application_pdf_download(request, token):
     response['X-Robots-Tag'] = 'noindex, nofollow'
     build_application_pdf(response, [application])
     return response
+
+
+def shared_card_application(token):
+    try:
+        payload = signing.loads(token, salt=CARD_SHARE_SALT)
+        application_id = payload['application_id']
+        if type(application_id) is not int or application_id < 1:
+            raise ValueError
+    except (signing.BadSignature, KeyError, TypeError, ValueError):
+        raise Http404('This card link is invalid.')
+    return get_object_or_404(CampusAmbassadorApplication, pk=application_id)
+
+
+def card_share_response_headers(response):
+    response['Cache-Control'] = 'private, no-store'
+    response['Referrer-Policy'] = 'no-referrer'
+    response['X-Robots-Tag'] = 'noindex, nofollow'
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response
+
+
+@require_http_methods(['GET', 'HEAD'])
+def ambassador_card_share(request, token):
+    application = shared_card_application(token)
+    context = ambassador_card_links(application, request, token=token)
+    # Only public card details belong on this page, never email, phone or student ID.
+    context.update({'ambassador_name': application.full_name, 'campus_name': application.campus_name})
+    return card_share_response_headers(render(request, 'ambassador_card_share.html', context))
+
+
+@require_http_methods(['GET', 'HEAD'])
+def ambassador_card_image(request, token):
+    from .cards import build_ambassador_card_png
+
+    application = shared_card_application(token)
+    response = HttpResponse(build_ambassador_card_png(application), content_type='image/png')
+    disposition = 'attachment' if request.GET.get('download') == '1' else 'inline'
+    response['Content-Disposition'] = f'{disposition}; filename="biin_ambassador_card.png"'
+    return card_share_response_headers(response)
 
 
 @login_required(login_url='login')

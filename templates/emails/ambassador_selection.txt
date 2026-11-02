@@ -7,6 +7,15 @@ Congratulations! You're selected as a BIIN Campus Ambassador representing {{ app
 We look forward to working with you to connect students, encourage innovation and create opportunities on your campus.
 
 Your official Campus Ambassador card is included with this email. Save it and share your new role with your campus community.
+{% if card_download_url %}
+Download card / photo: {{ card_download_url }}
+Share on Facebook: {{ facebook_share_url }}
+Share on WhatsApp: {{ whatsapp_share_url }}
+Share on X: {{ x_share_url }}
+Share on LinkedIn: {{ linkedin_share_url }}
+Instagram: {{ instagram_share_url }}
+For Instagram, download your photo and upload it as a post or story.
+{% endif %}
 
 Our team will share the next steps and onboarding details with you.
 
@@ -20,5 +29,7 @@ Program terms: {{ terms_url }}
 Contact: {{ contact_url }}
 Email: {{ contact_email }}
 Phone: {{ contact_phone }}
-{{ office_address }}
+{{ office_address }} — Maps: {{ maps_url }}
 © {{ year }} BIIN. All rights reserved.
+This is an automated email. You do not need to reply to this email.
+Developed by SoftsyncBD — https://softsync.bd

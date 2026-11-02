@@ -3,10 +3,8 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
 from django.core.validators import validate_email
 from django.http import HttpRequest
-from django.utils import timezone
 
 from registration.emails import send_application_confirmation
-from registration.models import CampusAmbassadorApplication
 
 
 class Command(BaseCommand):
@@ -16,6 +14,8 @@ class Command(BaseCommand):
         parser.add_argument('--to', help='Recipient email; prompts when omitted.')
 
     def handle(self, *args, **options):
+        if not settings.DEBUG:
+            raise CommandError('The test_email command is available only when DEBUG=True.')
         recipient = (options['to'] or input('To email: ')).strip()
         try:
             validate_email(recipient)
@@ -23,13 +23,9 @@ class Command(BaseCommand):
             raise CommandError('Enter a valid recipient email address.')
         if settings.EMAIL_BACKEND != 'django.core.mail.backends.smtp.EmailBackend':
             raise CommandError('Set DJANGO_EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend to send real mail.')
-        application = CampusAmbassadorApplication(
-            full_name='BIIN Test Applicant', email=recipient,
-            campus_name='Test University', department='Computer Science',
-            student_id='TEST-001', academic_year='3rd Year',
-            created_at=timezone.now(),
-            motivation='Sample application for email delivery testing.',
-        )
+        from development.email_samples import sample_application
+
+        application = sample_application(email=recipient)
         try:
             sent = send_application_confirmation(
                 application, HttpRequest(), recipient=recipient, test_email=True,

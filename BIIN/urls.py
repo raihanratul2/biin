@@ -12,3 +12,6 @@ urlpatterns = [
 
 if settings.DJANGO_ADMIN_ENABLED:
     urlpatterns.insert(0, path('admin/', admin.site.urls))
+
+if settings.DEBUG:
+    urlpatterns.append(path('__dev__/', include('development.urls')))
