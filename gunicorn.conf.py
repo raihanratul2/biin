@@ -29,4 +29,9 @@ errorlog = "-"
 loglevel = "info"
 capture_output = True
 
+# Gunicorn 25+ enables a management control socket under the service user's
+# home by default. The systemd unit intentionally makes /var/www read-only and
+# BIIN does not use gunicornc, so disable that optional socket.
+control_socket_disable = True
+
 preload_app = True
