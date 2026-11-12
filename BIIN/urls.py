@@ -3,10 +3,12 @@ from django.conf import settings
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
 
+from registration import views as registration_views
+
 urlpatterns = [
+    path('', registration_views.registration_form, name='registration_form'),
     path('login/', auth_views.LoginView.as_view(template_name='login.html', redirect_authenticated_user=True, next_page='applications'), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
-    path('', include('home.urls')),
+    path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('registration/', include('registration.urls')),
 ]
 

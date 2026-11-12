@@ -11,73 +11,25 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'main.css' %}">
-    <script src="{% static 'navigation.js' %}" defer></script>
     {% block extra_head %}{% endblock %}
 </head>
 <body class="site-layout {% block body_class %}{% endblock %}">
+    {% block header %}
     <header class="site-header">
-        <nav class="navbar container" aria-label="Main navigation">
+        <div class="navbar container" aria-label="BIIN header">
             <div class="brand-wrap">
-                <a href="{% url 'home' %}" class="brand-logo" aria-label="BIIN home">
+                <span class="brand-logo">
                     <img src="{% static 'BIIN_Logo.png' %}" alt="BIIN — Bangladesh ICT and Innovation Network">
-                </a>
+                </span>
             </div>
-            <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" hidden>
-                <span></span><span></span><span></span>
-            </button>
-            <div class="nav-menu" id="primary-navigation">
-            <div class="nav-links">
-                <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a>
-                <a href="{% url 'about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">About Us</a>
-                <a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact Us</a>
-            </div>
-            {% if request.resolver_match.url_name != 'registration_form' %}
-                <a class="button primary header-button" href="{% url 'registration_form' %}">Join Now</a>
-            {% endif %}
-            </div>
-        </nav>
+        </div>
     </header>
+    {% endblock %}
 
     <main class="site-main">
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="site-footer">
-        <div class="container footer-grid">
-            <div>
-                <h3>BIIN</h3>
-                <p>Building student communities and opportunities across Bangladesh.</p>
-            </div>
-            <div>
-                <h4>Quick Links</h4>
-                <ul>
-                    <li><a href="{% url 'home' %}">Home</a></li>
-                    <li><a href="{% url 'about' %}">About Us</a></li>
-                    <li><a href="{% url 'contact' %}">Contact</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4>Staff Access</h4>
-                <ul>
-                    {% if user.is_authenticated and user.is_staff %}
-                        <li><a href="{% url 'applications' %}">Applicant List</a></li>
-                        <li><a href="{% url 'registration_settings' %}">Registration Settings</a></li>
-                        <li>
-                            <form method="post" action="{% url 'logout' %}" class="logout-form">
-                                {% csrf_token %}
-                                <button type="submit" class="logout-button">Logout</button>
-                            </form>
-                        </li>
-                    {% else %}
-                        <li><a href="{% url 'login' %}">Staff Login</a></li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom container">
-            <p>&copy; {% now 'Y' %} BIIN. All rights reserved.</p>
-            {% include 'includes/developer_credit.html' %}
-        </div>
-    </footer>
+    {% block footer %}{% endblock %}
 </body>
 </html>

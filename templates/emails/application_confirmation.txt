@@ -20,10 +20,8 @@ Best regards,
 BIIN Team
 
 Bangladesh ICT and Innovation Network
-Website: {{ site_url }}
-About BIIN: {{ about_url }}
 Program terms: {{ terms_url }}
-Contact: {{ contact_url }}
+Email: {{ contact_email }}
 Phone: {{ contact_phone }}
 {{ office_address }} — Maps: {{ maps_url }}
 © {{ year }} BIIN. All rights reserved.

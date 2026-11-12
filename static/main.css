@@ -778,6 +778,10 @@ select {
     padding-bottom: 20px;
 }
 
+.panel-footer-grid {
+    grid-template-columns: minmax(0, 560px);
+}
+
 .site-footer h3,
 .site-footer h4 {
     margin-top: 0;
@@ -850,7 +854,7 @@ select {
     }
 }
 
-/* Shared navigation across public and registration pages. */
+/* Staff panel navigation. */
 .brand-wrap { flex-shrink: 0; }
 .nav-menu { display: flex; align-items: center; gap: 24px; }
 .navbar .header-button { padding: 11px 20px; font-size: 14px; white-space: nowrap; box-shadow: none; }

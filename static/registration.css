@@ -186,6 +186,8 @@
 .photo-dialog #picture-crop-title { font-size: 16px; }
 .photo-dialog #picture-crop-status { margin-top: 8px; font-size: 11px; }
 body.photo-crop-open { overflow: hidden; }
+.registration-developer-credit { display: flex; justify-content: center; margin-top: 24px; color: #33445d; }
+.registration-developer-credit .developer-credit { justify-content: center; margin: 0; }
 @media (max-width: 600px) {
     .photo-dialog .photo-editor { grid-template-columns: 1fr; padding: 16px; gap: 12px; }
     .photo-dialog .photo-crop-stage { width: min(100%, 180px); }

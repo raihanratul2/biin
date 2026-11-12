@@ -14,7 +14,7 @@
   <div class="registration-wrap">
     <section class="registration-hero" aria-labelledby="registration-title">
       <div class="registration-hero-copy">
-        <a class="registration-wordmark" href="{% url 'home' %}" aria-label="BIIN home">BIIN<span class="brand-dot"></span></a>
+        <span class="registration-wordmark">BIIN<span class="brand-dot"></span></span>
         <p class="program-label">CAMPUS AMBASSADOR PROGRAM</p>
         <h1 id="registration-title">Join the <span>Movement.</span></h1>
         <p class="hero-tagline">Your voice. Your campus. Our future.</p>
@@ -247,7 +247,9 @@
         </div>
       </div>
     </form>
-    <p class="registration-footnote">A campus full of ideas. A network to bring them to life.<br><span>Bangladesh ICT &amp; Innovation Network</span></p>
+    <div class="registration-developer-credit">
+      {% include 'includes/developer_credit.html' %}
+    </div>
   </div>
 </div>
 {% endblock %}

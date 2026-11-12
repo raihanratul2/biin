@@ -1,8 +1,8 @@
-{% extends 'base.html' %}
+{% extends 'panel_base.html' %}
 {% load static %}
 
 {% block title %}{{ application.full_name }} — Ambassador Card{% endblock %}
-{% block extra_head %}
+{% block panel_extra_head %}
 <link rel="stylesheet" href="{% static 'card-editor.css' %}">
 <script src="{% static 'card-editor.js' %}" defer></script>
 {% endblock %}

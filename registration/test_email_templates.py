@@ -38,7 +38,8 @@ class BrandedEmailTests(TestCase):
         self.assertIn('cid:ambassador-card', html)
         self.assertIn('cid:biin-logo', html)
         self.assertIn('http://testserver/terms/', html)
-        self.assertIn('http://testserver/contact/', html)
+        self.assertNotIn('/about/', html)
+        self.assertNotIn('/contact/', html)
         parsed = BytesParser(policy=policy.default).parsebytes(message.message().as_bytes())
         images = {part['Content-ID']: part for part in parsed.walk()
                   if part.get_content_type() == 'image/png' and part['Content-ID']}
@@ -87,7 +88,7 @@ class BrandedEmailTests(TestCase):
         with override_settings(ALLOWED_HOSTS=['preview.local']):
             request = RequestFactory().get('/', secure=True, HTTP_HOST='preview.local:8443')
             context = email_context(request, title='Preview', preheader='Preview')
-            for key in ['site_url', 'about_url', 'contact_url', 'terms_url']:
+            for key in ['site_url', 'terms_url']:
                 self.assertTrue(context[key].startswith('https://preview.local:8443'))
             send_application_confirmation(self.application, request)
             self.assertIn('https://preview.local:8443/registration/pdf/', mail.outbox[-1].body)
@@ -111,8 +112,8 @@ class AmbassadorCardSharingTests(TestCase):
         self.assertContains(response, 'property="og:image" content="' + self.links['card_image_url'] + '"')
         for private_value in [self.application.email, self.application.phone_number, self.application.student_id]:
             self.assertNotContains(response, private_value)
-        self.assertContains(response, 'developer/favicon.png')
-        self.assertContains(response, 'SoftsyncBD')
+        self.assertNotContains(response, reverse('login'))
+        self.assertNotContains(response, reverse('applications'))
         self.assertEqual(response['Referrer-Policy'], 'no-referrer')
         self.assertEqual(response['X-Robots-Tag'], 'noindex, nofollow')
 

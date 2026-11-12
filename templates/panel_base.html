@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_head %}
+<script src="{% static 'navigation.js' %}" defer></script>
+{% block panel_extra_head %}{% endblock %}
+{% endblock %}
+
+{% block header %}
+<header class="site-header">
+  <nav class="navbar container" aria-label="Panel navigation">
+    <div class="brand-wrap">
+      <a href="{% url 'applications' %}" class="brand-logo" aria-label="BIIN panel">
+        <img src="{% static 'BIIN_Logo.png' %}" alt="BIIN — Bangladesh ICT and Innovation Network">
+      </a>
+    </div>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" aria-label="Open navigation" hidden>
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-menu" id="primary-navigation">
+      <div class="nav-links">
+        <a href="{% url 'applications' %}" class="{% if request.resolver_match.url_name == 'applications' or request.resolver_match.url_name == 'ambassador_card' %}active{% endif %}">Applicants</a>
+        <a href="{% url 'registration_settings' %}" class="{% if request.resolver_match.url_name == 'registration_settings' %}active{% endif %}">Settings</a>
+      </div>
+      <form method="post" action="{% url 'logout' %}" class="logout-form">
+        {% csrf_token %}
+        <button type="submit" class="button secondary header-button">Logout</button>
+      </form>
+    </div>
+  </nav>
+</header>
+{% endblock %}
+
+{% block footer %}
+<footer class="site-footer">
+  <div class="container footer-grid panel-footer-grid">
+    <div>
+      <h3>BIIN</h3>
+      <p>Campus Ambassador Management Panel</p>
+    </div>
+  </div>
+  <div class="footer-bottom container">
+    <p>&copy; {% now 'Y' %} BIIN. All rights reserved.</p>
+    {% include 'includes/developer_credit.html' %}
+  </div>
+</footer>
+{% endblock %}

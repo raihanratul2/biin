@@ -33,8 +33,6 @@ def email_context(request, *, title, preheader):
     return {
         'email_title': title, 'preheader': preheader,
         'site_url': site_url,
-        'about_url': site_url + reverse('about'),
-        'contact_url': site_url + reverse('contact'),
         'terms_url': terms_url,
         'contact_email': contact, 'contact_phone': settings.BIIN_CONTACT_PHONE,
         'office_address': settings.BIIN_OFFICE_ADDRESS,

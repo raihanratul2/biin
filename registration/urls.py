@@ -6,7 +6,6 @@ urlpatterns = [
     path('card/<str:token>/', views.ambassador_card_share, name='ambassador_card_share'),
     path('card/<str:token>/photo.png', views.ambassador_card_image, name='ambassador_card_image'),
     path('pdf/<str:token>/', views.application_pdf_download, name='application_pdf_download'),
-    path('register/', views.registration_form, name='registration_form'),
     path('success/', views.registration_success, name='registration_success'),
     path('settings/', views.registration_settings, name='registration_settings'),
     path('applications/', views.applications, name='applications'),
